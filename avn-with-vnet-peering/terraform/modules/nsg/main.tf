@@ -21,6 +21,19 @@ resource "azurerm_network_security_group" "this" {
     destination_address_prefix = "*"
     description                = "Cho phép SSH (cổng 22) từ dải mạng được chỉ định"
   }
+
+  security_rule {
+    name                       = "Allow-Tailscale-UDP"
+    priority                   = 110
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Udp"
+    source_port_range          = "*"
+    destination_port_range     = "41641"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+    description                = "Cho phép kết nối WireGuard Tailscale Direct P2P (chống nghẽn DERP)"
+  }
 }
 
 resource "azurerm_subnet_network_security_group_association" "this" {

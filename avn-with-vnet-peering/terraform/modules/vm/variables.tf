@@ -31,9 +31,9 @@ variable "private_ip_address" {
 }
 
 variable "vm_size" {
-  description = "Kích thước máy ảo (mặc định: Standard_B2ats_v2)."
+  description = "Kích thước máy ảo (mặc định: Standard_B2as_v2 - 2 vCPU, 8 GiB RAM)."
   type        = string
-  default     = "Standard_B2ats_v2"
+  default     = "Standard_B2as_v2"
 }
 
 variable "admin_username" {
@@ -52,5 +52,11 @@ variable "tags" {
   description = "Tags metadata."
   type        = map(string)
   default     = {}
+}
+
+variable "enable_public_ip" {
+  description = "Tạo và gán Public IP cho VM để kích hoạt Tailscale Direct P2P (Bypass NAT)"
+  type        = bool
+  default     = false
 }
 

@@ -72,7 +72,7 @@ Sau khi `terraform apply` thành công:
 
 ### Cách 1: Mở Serial Console ngay trong Terminal (Khuyên dùng)
 ```bash
-az serial-console connect -n vm-development -g rg-asm
+az serial-console connect -n vm-2 -g rg-asm
 ```
 * Bấm **Enter** → Đăng nhập: `azureuser` / `AzureLab@123456`
 * Gõ lệnh kiểm tra kết nối:
@@ -84,7 +84,7 @@ az serial-console connect -n vm-development -g rg-asm
 * Thoát Serial Console: Bấm tổ hợp phím **`Ctrl + ]`** rồi ấn **`q`**.
 
 ### Cách 2: Mở Serial Console trên Azure Portal
-Vào **Virtual Machines** → chọn **`vm-development`** → mục **Help** → chọn **Serial console** → Đăng nhập và gõ lệnh test như trên.
+Vào **Virtual Machines** → chọn **`vm-2`** → mục **Help** → chọn **Serial console** → Đăng nhập và gõ lệnh test như trên.
 
 ---
 

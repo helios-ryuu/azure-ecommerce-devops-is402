@@ -49,24 +49,24 @@ avn-with-vnet-peering/
 
 ```mermaid
 flowchart LR
-    subgraph EastAsia[" Mạng Marketing (Environment Before) - East Asia "]
-        subgraph VNetMarketing[" Virtual Network (10.0.0.0/16) "]
-            subgraph SubnetMarketing[" Subnet (10.0.0.0/24) "]
-                NSG[" Network Security Group\nAllow SSH from 192.168.0.0/16 (Port 22) "]
-                VMMarketing[" Virtual Machine: vm-marketing\nPrivate IP: 10.0.0.100 (Static)\nSSH Port: 22 "]
-                NSG --> VMMarketing
+    subgraph EastAsia[" Mạng 1 (Environment Before) - East Asia "]
+        subgraph VNet1[" Virtual Network: vnet-1 (10.0.0.0/16) "]
+            subgraph Subnet1[" Subnet: subnet-1 (10.0.0.0/24) "]
+                NSG1[" Network Security Group: nsg-1\nAllow SSH: 192.168.0.0/16 (Port 22)\nAllow Tailscale: UDP 41641 (Direct P2P) "]
+                VM1[" Virtual Machine: vm-1\nPrivate IP: 10.0.0.100 (Static)\nPublic IP: pip-vm-1 (Direct P2P)\nSSH Port: 22 "]
+                NSG1 --> VM1
             end
         end
     end
 
-    subgraph KoreaCentral[" Mạng Development (Environment After) - Korea Central "]
-        subgraph VNetDev[" Virtual Network (192.168.0.0/20) "]
-            subgraph SubnetDev[" Subnet (192.168.0.0/24) "]
-                VMDev[" Virtual Machine: vm-development\nPrivate IP: Dynamic\nBoot Diagnostics: Serial Console "]
+    subgraph KoreaCentral[" Mạng 2 (Environment After) - Korea Central "]
+        subgraph VNet2[" Virtual Network: vnet-2 (192.168.0.0/20) "]
+            subgraph Subnet2[" Subnet: subnet-2 (192.168.0.0/24) "]
+                VM2[" Virtual Machine: vm-2\nPrivate IP: Dynamic\nBoot Diagnostics: Serial Console "]
             end
         end
     end
 
-    VNetMarketing <== " Complete Peering Connection (Global VNet Peering) " ==> VNetDev
-    VMDev -. " SSH Test (Port 22) " .-> NSG
+    VNet1 <== " Complete Peering Connection (Global VNet Peering) " ==> VNet2
+    VM2 -. " SSH Test (Port 22) " .-> NSG1
 ```

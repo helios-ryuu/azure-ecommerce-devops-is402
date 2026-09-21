@@ -46,12 +46,12 @@ module "dev_vnet" {
 }
 
 #--------------------------------------------------------------------------------
-# 4. Network Security Group (Cho phép SSH từ 192.168.0.0/16 vào Marketing)
+# 4. Network Security Group (Cho phép SSH từ 192.168.0.0/16 vào Mạng 1)
 #--------------------------------------------------------------------------------
 
 module "marketing_nsg" {
   source              = "./modules/nsg"
-  name                = "nsg-marketing"
+  name                = "nsg-1"
   location            = var.location_marketing
   resource_group_name = azurerm_resource_group.rg.name
   subnet_id           = module.marketing_vnet.subnet_id
@@ -60,30 +60,31 @@ module "marketing_nsg" {
 }
 
 #--------------------------------------------------------------------------------
-# 5. Máy ảo VM Marketing (Mục tiêu SSH: IP tĩnh 10.0.0.100)
+# 5. Máy ảo VM-1 (Mục tiêu SSH: IP tĩnh 10.0.0.100)
 #--------------------------------------------------------------------------------
 
 module "marketing_vm" {
   source                = "./modules/vm"
-  name                  = "vm-marketing"
+  name                  = "vm-1"
   location              = var.location_marketing
   resource_group_name   = azurerm_resource_group.rg.name
   subnet_id             = module.marketing_vnet.subnet_id
   private_ip_allocation = "Static"
   private_ip_address    = var.vm_marketing_private_ip # 10.0.0.100
+  enable_public_ip      = true                        # Kích hoạt Tailscale Direct P2P (Bypass NAT -> pip-vm-1)
   vm_size               = var.vm_size
   admin_username        = var.admin_username
   admin_password        = var.admin_password
-  tags                  = merge(var.tags, { Role = "Marketing-Target" })
+  tags                  = merge(var.tags, { Role = "Target-10.0.0.100" })
 }
 
 #--------------------------------------------------------------------------------
-# 6. Máy ảo VM Development (Nguồn kiểm thử: Bật Serial Console)
+# 6. Máy ảo VM-2 (Nguồn kiểm thử: Bật Serial Console)
 #--------------------------------------------------------------------------------
 
 module "dev_vm" {
   source                = "./modules/vm"
-  name                  = "vm-development"
+  name                  = "vm-2"
   location              = var.location_dev
   resource_group_name   = azurerm_resource_group.rg.name
   subnet_id             = module.dev_vnet.subnet_id
@@ -91,7 +92,7 @@ module "dev_vm" {
   vm_size               = var.vm_size
   admin_username        = var.admin_username
   admin_password        = var.admin_password
-  tags                  = merge(var.tags, { Role = "Dev-Tester" })
+  tags                  = merge(var.tags, { Role = "Client-Tester" })
 }
 
 #--------------------------------------------------------------------------------

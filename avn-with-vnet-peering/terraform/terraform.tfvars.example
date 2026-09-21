@@ -10,7 +10,7 @@
 # 1. Nhóm tài nguyên Resource Group
 resource_group_name = "rg-asm"
 
-# 2. Mạng Marketing (Bên trái sơ đồ: 10.0.0.0/16 & Subnet 10.0.0.0/24)
+# 2. Mạng 1 (Bên trái sơ đồ: 10.0.0.0/16 & Subnet 10.0.0.0/24)
 location_marketing           = "eastasia"
 vnet_marketing_name          = "vnet-1"
 vnet_marketing_address_space = ["10.0.0.0/16"]
@@ -18,7 +18,7 @@ subnet_marketing_name        = "subnet-1"
 subnet_marketing_cidr        = ["10.0.0.0/24"]
 vm_marketing_private_ip      = "10.0.0.100"
 
-# 3. Mạng Development (Bên phải sơ đồ: 192.168.0.0/20 & Subnet 192.168.0.0/24)
+# 3. Mạng 2 (Bên phải sơ đồ: 192.168.0.0/20 & Subnet 192.168.0.0/24)
 location_dev            = "koreacentral"
 vnet_dev_name           = "vnet-2"
 vnet_dev_address_space  = ["192.168.0.0/20"]
@@ -26,7 +26,7 @@ subnet_dev_name         = "subnet-2"
 subnet_dev_cidr         = ["192.168.0.0/24"]
 
 # 4. Cấu hình Máy ảo (VMs) & Đăng nhập Serial Console
-vm_size        = "Standard_B2ms" # B-series (2 vCPU, 8 GiB RAM) đáp ứng tiêu chí bộ nhớ >4GB
+vm_size        = "Standard_B2as_v2" # B-series v2 AMD (2 vCPU, 8 GiB RAM)
 admin_username = "azureuser"
 admin_password = "AzureLab@123456"
 

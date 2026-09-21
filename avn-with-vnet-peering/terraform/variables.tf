@@ -28,75 +28,75 @@ variable "tags" {
 }
 
 #--------------------------------------------------------------------------------
-# 2. Mạng Marketing (Bên trái sơ đồ: 10.0.0.0/16 - Subnet: 10.0.0.0/24)
+# 2. Mạng 1 (Bên trái sơ đồ: 10.0.0.0/16 - Subnet: 10.0.0.0/24)
 #--------------------------------------------------------------------------------
 
 variable "location_marketing" {
-  description = "Vùng Azure triển khai Marketing VNet (mặc định: East Asia)."
+  description = "Vùng Azure triển khai Mạng 1 (vnet-1, mặc định: East Asia)."
   type        = string
   default     = "eastasia"
 }
 
 variable "vnet_marketing_name" {
-  description = "Tên Virtual Network của Marketing (đánh số theo chuẩn)."
+  description = "Tên Virtual Network 1 (đánh số theo chuẩn: vnet-1)."
   type        = string
   default     = "vnet-1"
 }
 
 variable "vnet_marketing_address_space" {
-  description = "Dải CIDR cho Marketing VNet theo đúng sơ đồ Lab (10.0.0.0/16)."
+  description = "Dải CIDR cho Mạng 1 theo đúng sơ đồ Lab (10.0.0.0/16)."
   type        = list(string)
   default     = ["10.0.0.0/16"]
 }
 
 variable "subnet_marketing_name" {
-  description = "Tên Subnet bên trong Marketing VNet (đánh số theo chuẩn)."
+  description = "Tên Subnet bên trong Mạng 1 (đánh số theo chuẩn: subnet-1)."
   type        = string
   default     = "subnet-1"
 }
 
 variable "subnet_marketing_cidr" {
-  description = "Dải CIDR cho Subnet Marketing (10.0.0.0/24)."
+  description = "Dải CIDR cho Subnet 1 (10.0.0.0/24)."
   type        = list(string)
   default     = ["10.0.0.0/24"]
 }
 
 variable "vm_marketing_private_ip" {
-  description = "Địa chỉ IP tĩnh của Marketing VM theo đúng sơ đồ Lab (10.0.0.100)."
+  description = "Địa chỉ IP tĩnh của máy ảo vm-1 theo đúng sơ đồ Lab (10.0.0.100)."
   type        = string
   default     = "10.0.0.100"
 }
 
 #--------------------------------------------------------------------------------
-# 3. Mạng Development (Bên phải sơ đồ: 192.168.0.0/20 - Subnet: 192.168.0.0/24)
+# 3. Mạng 2 (Bên phải sơ đồ: 192.168.0.0/20 - Subnet: 192.168.0.0/24)
 #--------------------------------------------------------------------------------
 
 variable "location_dev" {
-  description = "Vùng Azure triển khai Development VNet (mặc định: Korea Central - Global Peering)."
+  description = "Vùng Azure triển khai Mạng 2 (vnet-2, mặc định: Korea Central - Global Peering)."
   type        = string
   default     = "koreacentral"
 }
 
 variable "vnet_dev_name" {
-  description = "Tên Virtual Network của phòng Phát triển (Development - đánh số theo chuẩn)."
+  description = "Tên Virtual Network 2 (đánh số theo chuẩn: vnet-2)."
   type        = string
   default     = "vnet-2"
 }
 
 variable "vnet_dev_address_space" {
-  description = "Dải CIDR cho Development VNet theo đúng sơ đồ Lab (192.168.0.0/20)."
+  description = "Dải CIDR cho Mạng 2 theo đúng sơ đồ Lab (192.168.0.0/20)."
   type        = list(string)
   default     = ["192.168.0.0/20"]
 }
 
 variable "subnet_dev_name" {
-  description = "Tên Subnet bên trong Development VNet (đánh số theo chuẩn: subnet-2)."
+  description = "Tên Subnet bên trong Mạng 2 (đánh số theo chuẩn: subnet-2)."
   type        = string
   default     = "subnet-2"
 }
 
 variable "subnet_dev_cidr" {
-  description = "Dải CIDR cho Subnet Development (192.168.0.0/24)."
+  description = "Dải CIDR cho Subnet 2 (192.168.0.0/24)."
   type        = list(string)
   default     = ["192.168.0.0/24"]
 }
@@ -106,9 +106,9 @@ variable "subnet_dev_cidr" {
 #--------------------------------------------------------------------------------
 
 variable "vm_size" {
-  description = "Kích thước máy ảo Linux (Standard_B2ms: 2 vCPU, 8 GB RAM đáp ứng tiêu chí bộ nhớ >4GB)."
+  description = "Kích thước máy ảo Linux (Standard_B2as_v2: 2 vCPU, 8 GB RAM)."
   type        = string
-  default     = "Standard_B2ms"
+  default     = "Standard_B2as_v2"
 }
 
 variable "admin_username" {
