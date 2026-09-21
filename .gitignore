@@ -1,0 +1,40 @@
+# Local credentials and sensitive files
+contributor.json
+init.log
+
+# Local environment variables
+.env
+.env.*
+env-vars
+nginx.conf
+
+# Datasets
+dataset.csv
+
+# Terraform local state and working directories
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.plan
+
+# Terraform variable files containing secrets
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+!*.tfvars.sample
+
+# CLI logs and crash dumps
+crash.log
+crash.*.log
+*.log
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.obsidian/
+*.swp
+*.swo
+*~

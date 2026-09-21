@@ -1,0 +1,9 @@
+services:
+  dataset-nginx:
+    image: nginx:alpine
+    container_name: dataset-nginx
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./dataset.csv:/datasets/dataset.csv:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
