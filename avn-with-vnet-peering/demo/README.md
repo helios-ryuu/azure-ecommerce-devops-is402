@@ -612,15 +612,23 @@ Sau khi chứng minh hai máy ảo hoàn toàn bị cô lập mạng ở Bước
   ```bash
   tailscale ping <SERVER_IP>
   ```
-  *Quan sát kết quả trên terminal:*
+  *Quan sát kết quả trên terminal thực tế:*
   ```text
-  pong from dataset-server (<SERVER_IP>) via <PUBLIC_IP>:41641 in 28ms (direct)
+  azureuser@vm-1:~$ tailscale ping <SERVER_IP>
+  pong from dataset-server (<SERVER_IP>) via DERP(sin) in 155ms
+  pong from dataset-server (<SERVER_IP>) via DERP(sin) in 76ms
+  pong from dataset-server (<SERVER_IP>) via DERP(sin) in 76ms
+  pong from dataset-server (<SERVER_IP>) via <PUBLIC_IP>:56538 in 42ms
+  azureuser@vm-1:~$ tailscale ping <SERVER_IP>
+  pong from dataset-server (<SERVER_IP>) via <PUBLIC_IP>:56538 in 43ms
+  azureuser@vm-1:~$ tailscale ping <SERVER_IP>
+  pong from dataset-server (<SERVER_IP>) via <PUBLIC_IP>:56538 in 42ms
   ```
 
   > [!IMPORTANT]
   > **Dấu hiệu kỹ thuật quan trọng:**
-  > * Dòng chữ **`(direct)`** xác nhận gói tin WireGuard UDP đi trực tiếp điểm-điểm (P2P) giữa hai máy, không đi vòng qua máy chủ trung chuyển DERP. Tốc độ kéo dữ liệu lúc này sẽ đạt mức tối đa (30 - 80+ MB/s).
-  > * Nếu output hiển thị `via DERP(...)`, hãy kiểm tra lại xem cổng `41641/UDP` trên NSG `nsg-1` đã được Allow hay chưa.
+  > * Dòng chữ **`via <PUBLIC_IP>:56538 in 42ms`** xác nhận Tailscale đã đục lỗ NAT (hole-punching) thành công từ DERP sang **Direct P2P WireGuard**, độ trễ giảm từ 155ms xuống chỉ còn **42ms**.
+  > * Tốc độ kéo dữ liệu lúc này sẽ đạt mức tối đa không bị bóp nghẽn bởi DERP Relay.
 
 * **Thao tác 4: Cài đặt các công cụ tối ưu truyền tải đa luồng và nén dữ liệu**
   ```bash
@@ -631,16 +639,30 @@ Sau khi chứng minh hai máy ảo hoàn toàn bị cô lập mạng ở Bước
   ```bash
   aria2c -x 8 -s 8 -k 1M http://<SERVER_IP>:8000/dataset.csv
   ```
+  *Kết quả chạy thực tế trên terminal:*
+  ```text
+  09/21 17:50:48 [NOTICE] Downloading 1 item(s)
+  [#07bca8 1.2GiB/1.2GiB(99%) CN:1 DL:33MiB]                                     
+  09/21 17:51:32 [NOTICE] Download complete: /home/azureuser/dataset.csv
 
-  > [!NOTE]
-  > **Tại sao dùng `aria2c` (HTTP Client-Pull) thay vì `curl` / `wget` tuần tự?**
-  > File dữ liệu có kích thước lớn (> 1.2 GB) và máy chủ Nginx (`/dataset-server`) đã mở cờ `Accept-Ranges: bytes` cùng cấu hình `max_ranges 512;`. Bằng cách truyền tham số `-x 8 -s 8 -k 1M`, `aria2c` sẽ chia nhỏ file thành các khối 1MB và mở **8 kết nối TCP song song** để kéo đồng thời, giúp khai thác tối đa băng thông mạng Tailscale mesh VPN, nhanh hơn từ 3 đến 5 lần so với lệnh `curl` đơn luồng.
+  Download Results:
+  gid   |stat|avg speed  |path/URI
+  ======+====+===========+=======================================================
+  07bca8|OK  |    33MiB/s|/home/azureuser/dataset.csv
+
+  Status Legend:
+  (OK):download completed.
+  ```
 
 * **Thao tác 6: Xác nhận kích thước file tải về**
   ```bash
   ls -lh dataset.csv
   ```
-  *Kết quả hiển thị xấp xỉ `1.3G` (1,303,422,535 bytes) → Ghi nhận kích thước file này vào báo cáo.*
+  *Kết quả thực tế:*
+  ```text
+  -rw-rw-r-- 1 azureuser azureuser 1.3G Sep 21 17:51 dataset.csv
+  ```
+  *(Kích thước chính xác: `1,303,422,535 bytes` ~ `1,243.04 MB` ~ `1.3 GB`).*
 
 * **Thao tác 7: Chuẩn bị cơ chế truyền tải nội bộ liên vùng**
   * **Cơ chế 1 (Khuyên dùng - SSH Stream-Push với `pv | pigz`):** Không cần cài thêm web server hay mở cổng nào khác; file `dataset.csv` và công cụ `pigz` đã sẵn sàng để máy `vm-2` kéo qua kênh SSH an toàn.
@@ -679,21 +701,36 @@ Sau khi chứng minh hai máy ảo hoàn toàn bị cô lập mạng ở Bước
   ```bash
   ping -c 5 10.0.0.100
   ```
-  *Quan sát kết quả ở dòng cuối `rtt min/avg/max/mdev`. Ghi nhận giá trị **avg** (ví dụ `32.4 ms`) vào sổ tay.*
+  *Kết quả quan sát thực tế trên terminal:*
+  ```text
+  azureuser@vm-2:~$ ping -c 5 10.0.0.100
+  PING 10.0.0.100 (10.0.0.100) 56(84) bytes of data.
+  64 bytes from 10.0.0.100: icmp_seq=1 ttl=64 time=35.7 ms
+  64 bytes from 10.0.0.100: icmp_seq=2 ttl=64 time=35.3 ms
+  64 bytes from 10.0.0.100: icmp_seq=3 ttl=64 time=35.3 ms
+  64 bytes from 10.0.0.100: icmp_seq=4 ttl=64 time=35.3 ms
+  64 bytes from 10.0.0.100: icmp_seq=5 ttl=64 time=35.2 ms
+
+  --- 10.0.0.100 ping statistics ---
+  5 packets transmitted, 5 received, 0% packet loss, time 4006ms
+  rtt min/avg/max/mdev = 35.240/35.355/35.717/0.181 ms
+  ```
+  *(Độ trễ trung bình cực kỳ lý tưởng: **`35.355 ms`**, tỷ lệ mất gói **0%** chứng minh đường truyền Microsoft Backbone hoàn toàn thông suốt).*
 
 * **Thao tác 3: Truyền tải bộ dữ liệu qua VNet Peering bằng SSH Stream**
   Tận dụng cổng SSH 22 nội bộ duy nhất đã được cấu hình cho phép trên NSG `nsg-1` và thông suốt qua VNet Peering. Ta sử dụng cơ chế **SSH Stream kết hợp nén luồng Gzip tích hợp** (máy nguồn `vm-1` nén dòng dữ liệu gửi qua kênh SSH, máy đích `vm-2` giải nén trực tiếp vào file đĩa) và đo đạc thời gian bằng lệnh `time`:
   ```bash
   time (ssh azureuser@10.0.0.100 "gzip -c dataset.csv" | gzip -d > dataset.csv)
   ```
-  
-  Màn hình terminal sẽ hoàn tất và hiển thị thời gian thực thi:
+  *Kết quả thực thi thực tế trên terminal:*
   ```text
-  real    0m19.820s
-  user    0m11.340s
-  sys     0m4.210s
+  azureuser@10.0.0.100's password: 
+
+  real    0m24.591s
+  user    0m4.144s
+  sys     0m0.458s
   ```
-  *Ghi nhận giá trị **real** (ví dụ `19.82s`) để tính toán thông lượng băng thông.*
+  *Ghi nhận thời gian thực tế **`24.591 s`** để tính toán thông lượng băng thông.*
 
 * **Thao tác 4: Xác thực dung lượng và tính toàn vẹn dữ liệu nội bộ (Data Integrity Check)**
   Kiểm tra kích thước file và tính toán mã băm kiểm tra:
@@ -701,24 +738,25 @@ Sau khi chứng minh hai máy ảo hoàn toàn bị cô lập mạng ở Bước
   ls -lh dataset.csv
   md5sum dataset.csv
   ```
-  *Ghi nhận dung lượng hiển thị xấp xỉ `1.3G` (1,303,422,535 bytes) và mã băm MD5.*  
-  $$\text{Throughput (MB/s)} = \frac{\text{Dung lượng file (MB)}}{\text{Thời gian truyền tải (s)}} = \frac{1,243.04 \text{ MB}}{19.82 \text{ s}} \approx 62.72 \text{ MB/s}$$
+  *Kết quả thực tế hiển thị file: `1,303,422,535 bytes` (~ `1,243.04 MB` ~ `1.3G`).*  
+  $$\text{Throughput (MB/s)} = \frac{\text{Dung lượng file (MB)}}{\text{Thời gian truyền tải (s)}} = \frac{1,243.04 \text{ MB}}{24.591 \text{ s}} \approx \mathbf{50.55 \text{ MB/s}}$$
   > [!TIP]
-  > **Ý nghĩa minh chứng kỹ thuật:** Mã băm MD5 trùng khớp 100% giữa hai máy ảo chứng minh liên kết **VNet Peering** xuyên vùng địa lý qua mạng cáp quang riêng của Microsoft đạt độ ổn định và toàn vẹn bit tuyệt đối, không xảy ra hiện tượng thất thoát hay suy hao gói tin trên payload lớn (>1.2GB).
+  > **Ý nghĩa minh chứng kỹ thuật:** Băng thông truyền tải đạt **~50.55 MB/s** xuyên qua hai vùng địa lý (East Asia ↔ Korea Central) qua đường truyền mã hóa SSH nội bộ. Mã băm MD5 trùng khớp 100% giữa hai máy ảo chứng minh tính toàn vẹn bit tuyệt đối, không xảy ra hiện tượng thất thoát gói tin trên payload lớn (>1.2GB).
 
 * **Thao tác 5: Chuẩn bị script ETL & Benchmark nén dữ liệu bằng Python Standard Library**
   
-  Do giao diện Azure Serial Console dễ bị trễ hoặc rớt ký tự khi sao chép các đoạn mã dài nhiều dòng, bạn có thể kéo trực tiếp file script `etl_benchmark.py` từ máy chủ iMac (dataset-server) về `vm-2` thông qua cầu nối SSH của `vm-1` chỉ với **1 câu lệnh duy nhất**:
+  Kéo trực tiếp file script `etl_benchmark.py` từ máy chủ (dataset-server) về `vm-2` thông qua cầu nối SSH của `vm-1` chỉ với **1 câu lệnh duy nhất**:
   ```bash
-  ssh azureuser@10.0.0.100 "curl -s http://100.120.64.5:8000/etl_benchmark.py" > etl_benchmark.py
+  ssh azureuser@10.0.0.100 "curl -s http://<SERVER_IP>:8000/etl_benchmark.py" > etl_benchmark.py
   ```
-  *(Nhập mật khẩu `AzureLab@123456`. Lệnh này kích hoạt `vm-1` lấy script từ máy chủ iMac qua Tailnet và truyền thẳng nội dung về `vm-2` qua VNet Peering trong tích tắc, hoàn toàn không cần paste thủ công).*
+  *(Nhập mật khẩu `AzureLab@123456`. Thay `<SERVER_IP>` bằng IP máy chủ Tailscale của bạn. Lệnh này kích hoạt `vm-1` lấy script từ máy chủ qua Tailnet và truyền thẳng nội dung về `vm-2` qua VNet Peering trong tích tắc).*
 
   > [!TIP]
   > **Tùy chọn: Tự dán thủ công nếu không dùng server iMac:**
   > Nếu muốn tự tạo file thủ công hoặc kiểm tra nội dung mã nguồn, bạn có thể xem file [`demo/etl_benchmark.py`](etl_benchmark.py) hoặc chạy khối lệnh sau:
-  > ```bash
-  > cat << 'EOF' > etl_benchmark.py
+  
+  ```bash
+  cat << 'EOF' > etl_benchmark.py
   import os, sys, time, csv, gzip
 
   input_csv = sys.argv[1] if len(sys.argv) > 1 else "dataset.csv"
@@ -813,7 +851,20 @@ Sau khi chứng minh hai máy ảo hoàn toàn bị cô lập mạng ở Bước
   ```bash
   python3 etl_benchmark.py dataset.csv dataset_clean.csv.gz
   ```
-  *Quan sát kết quả in ra màn hình console và ghi chép lại các giá trị đo đạc.*
+  *Kết quả in ra thực tế trên màn hình console:*
+  ```text
+  azureuser@vm-2:~$ python3 etl_benchmark.py dataset.csv dataset_clean.csv.gz
+  [1] Kich thuoc file CSV goc: 1243.04 MB (1,303,422,535 bytes)
+  [2] EXTRACT & TRANSFORM: Doc, lam sach 5,770,240 dong mat: 30.748 s (Toc do: 40.43 MB/s)
+  [3] LOAD (Gzip Compressed): Ghi nen thanh cong, giu lai 3,404,765 dong hop le
+      Kich thuoc file sau nen: 44.49 MB (46,650,007 bytes)
+  [4] BENCHMARK GZ READ: Doc lai toan bo file nen 3,404,766 dong mat: 2.214 s (Toc do tuong duong: 561.48 MB/s)
+
+  ==================================================
+  -> Ty le nen du lieu:           27.94x (Tiet kiem 96.42% dung luong luu tru)
+  -> Tang toc do doc (Speedup):   13.89 lan so voi xu ly file goc
+  ==================================================
+  ```
 
 ---
 
@@ -835,29 +886,29 @@ Sau khi chạy xong các lệnh thực nghiệm, sinh viên đối chiếu các 
 | Chỉ số đường truyền | Giá trị đo đạc thực tế | Ghi chú kỹ thuật |
 | :--- | :--- | :--- |
 | **Vùng địa lý (Cross-Region)** | East Asia (Hong Kong) ↔ Korea Central (Seoul) | Định tuyến qua Microsoft Private Backbone |
-| **Độ trễ trung bình (Avg RTT)** | `[Điền kết quả ping] ms` | Hạ tầng cáp quang riêng, không qua Internet |
+| **Độ trễ trung bình (Avg RTT)** | `[Điền kết quả ping] ms` | Tuyến cáp quang riêng, không qua Internet |
 | **Kích thước payload truyền tải** | `[Điền dung lượng file] MB` | Đáp ứng mức tải cao nhất **>= 1.0 GB** |
 | **Xác thực toàn vẹn bit (MD5 Checksum)** | Trùng khớp 100% | Không lỗi bit, không suy hao gói tin |
 | **SSH Stream nén luồng Gzip** | Thời gian: `[..] s` - Tốc độ: `[..] MB/s` | Kênh bảo mật SSH (Port 22), nén luồng song song |
-| **SSH Stream thô không nén** | Thời gian: `[..] s` - Tốc độ: `[..] MB/s` | Tốc độ truyền tải mạng vật lý thuần túy |
+| **Kéo dữ liệu từ Tailnet (`aria2c`)** | Thời gian: `[..] s` - Tốc độ: `[..] MB/s` | Tải 8 kết nối song song qua Tailscale Direct P2P |
 
-##### 3. Bảng số liệu mẫu tham khảo:
+##### 3. Bảng số liệu thực tế thu được (Dùng để đối chiếu và đưa vào báo cáo IS402):
 
-### BẢNG SỐ LIỆU MẪU ĐỐI CHIẾU THỰC NGHIỆM (IS402)
+### BẢNG SỐ LIỆU ĐỐI CHIẾU THỰC NGHIỆM THỰC TẾ (IS402)
 
 | Chỉ số đo đạc (Metric) | Định dạng CSV thô (Raw) | Định dạng Nén (Compressed Gzip) | Mức độ tối ưu / Cải thiện |
 | :--- | :--- | :--- | :--- |
-| **Dung lượng lưu trữ (Storage Size)** | `1.24 GB` (1,303,422,535 B) | `225.18 MB` (236,118,520 B) | **Tiết kiệm 82.72%** (Tỷ lệ nén: 5.79x) |
-| **Thời gian xử lý / Đọc (Read Time)** | `24.150 s` | `6.820 s` | **Nhanh hơn 3.54 lần** |
-| **Tốc độ đọc I/O (Throughput)** | `51.47 MB/s` | `182.26 MB/s` | Giảm áp lực đọc đĩa I/O |
-| **Số lượng bản ghi hợp lệ** | `9,852,140` dòng | `8,214,560` dòng sạch | Lọc bỏ dữ liệu thiếu/null |
+| **Dung lượng lưu trữ (Storage Size)** | **`1,243.04 MB`** (1,303,422,535 bytes) | **`44.49 MB`** (46,650,007 bytes) | **Tiết kiệm 96.42%** (Tỷ lệ nén: **`27.94x`**) |
+| **Thời gian xử lý / Đọc (Read Time)** | `30.748 s` | `2.214 s` | **Nhanh hơn 13.89 lần** |
+| **Tốc độ đọc I/O (Throughput)** | `40.43 MB/s` | `561.48 MB/s` | Tối ưu hóa I/O vượt trội |
+| **Số lượng bản ghi hợp lệ** | `5,770,240` dòng | `3,404,765` dòng sạch | Đã lọc loại bỏ 2,365,475 dòng thiếu/null |
 
 **Đối chiếu hiệu năng truyền tải mạng liên vùng (Payload 1.24 GB):**
 
 | Phương thức truyền tải | Thời gian truyền tải | Tốc độ truyền (Throughput) | Đánh giá & Ghi chú kỹ thuật |
 | :--- | :--- | :--- | :--- |
-| **SSH Stream nén luồng Gzip** | **`19.82 s`** | **`62.72 MB/s`** | **Tối ưu nhất:** Nén luồng tại máy nguồn, giải nén tại máy đích |
-| **SSH Stream thô không nén** | `38.50 s` | `32.28 MB/s` | Băng thông mạng thuần túy qua kết nối mã hóa SSH |
+| **SSH Stream nén luồng Gzip** | **`24.591 s`** | **`50.55 MB/s`** | **Tối ưu nhất:** Nén luồng tại máy nguồn, giải nén tại máy đích |
+| **Kéo dữ liệu từ Tailnet (`aria2c -x 8`)** | `44.000 s` | `33.00 MB/s` | Kéo 8 luồng song song qua WireGuard Direct P2P |
 
 > [!TIP]
 > **Hướng dẫn nộp bài & Báo cáo KLTN/Word:**
