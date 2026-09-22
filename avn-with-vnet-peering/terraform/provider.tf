@@ -12,8 +12,5 @@ provider "azurerm" {
       prevent_deletion_if_contains_resources = false
     }
   }
-
-  # Bỏ qua quét đăng ký resource provider trên Azure for Students
-  skip_provider_registration = true
 }
 
