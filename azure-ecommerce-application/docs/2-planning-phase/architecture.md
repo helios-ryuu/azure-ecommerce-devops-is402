@@ -4,203 +4,219 @@
   </a>
 </p>
 <h1 align="center"><b>IS402.R11 - ĐIỆN TOÁN ĐÁM MÂY</b></h1>
-<p align="center"><b>Thiết kế Kiến trúc Hệ thống Cloud-Native E-Commerce trên Microsoft Azure</b></p>
+<p align="center"><b>Thiết kế Kiến trúc Hệ thống Cloud-Native E-Commerce trên Microsoft Azure (Nhánh Web)</b></p>
 
 ---
 
 ## MỤC LỤC
-- [1. Tổng quan Kiến trúc](#1-tổng-quan-kiến-trúc)
-- [2. Sơ đồ Kiến trúc Hệ thống (Architecture Diagram)](#2-sơ-đồ-kiến-trúc-hệ-thống-architecture-diagram)
+- [1. Tổng quan Kiến trúc & Danh mục Phiên bản Công nghệ](#1-tổng-quan-kiến-trúc--danh-mục-phiên-bản-công-nghệ)
+- [2. Sơ đồ Kiến trúc Hệ thống (ASCII Diagram)](#2-sơ-đồ-kiến-trúc-hệ-thống-ascii-diagram)
 - [3. Phân loại theo Mô hình Dịch vụ Đám mây (IaaS, PaaS, FaaS, SaaS)](#3-phân-loại-theo-mô-hình-dịch-vụ-đám-mây-iaas-paas-faas-saas)
-- [4. Chi tiết các Vi dịch vụ (Microservices Workloads)](#4-chi-tiết-các-vi-dịch-vụ-microservices-workloads)
-- [5. Các Luồng Dữ liệu & Xử lý Nghiệp vụ (Data Flows)](#5-các-luồng-dữ-liệu--xử-lý-nghiệp-vụ-data-flows)
-- [6. Mô hình Dữ liệu & Lưu trữ Đa tầng (Storage & Lakehouse)](#6-mô-hình-dữ-liệu--lưu-trữ-đa-tầng-storage--lakehouse)
-- [7. Cơ chế Triển khai Blue/Green & Tự động hóa CI/CD](#7-cơ-chế-triển-khai-bluegreen--tự-động-hóa-cicd)
+- [4. Thiết kế Web 4 Trang & 2 Microservices trên AKS (Barem Mục 4)](#4-thiết-kế-web-4-trang--2-microservices-trên-aks-barem-mục-4)
+- [5. Mô hình Lưu trữ Đa tầng & Luồng Dữ liệu (Barem Mục 2 & 3)](#5-mô-hình-lưu-trữ-đa-tầng--luồng-dữ-liệu-barem-mục-2--3)
+- [6. Cơ chế Triển khai Blue/Green & Tự động hóa CI/CD](#6-cơ-chế-triển-khai-bluegreen--tự-động-hóa-cicd)
+- [7. Thiết kế Thực nghiệm Đo kiểm Hiệu năng (Benchmark & Latency)](#7-thiết-kế-thực-nghiệm-đo-kiểm-hiệu-năng-benchmark--latency)
 
 ---
 
-## 1. Tổng quan Kiến trúc
+## 1. Tổng quan Kiến trúc & Danh mục Phiên bản Công nghệ
 
-Hệ thống Thương mại điện tử được thiết kế theo kiến trúc **Cloud-Native phân tán**, vận hành hoàn toàn trên nền tảng đám mây **Microsoft Azure**. Mục tiêu trọng tâm là giải quyết các bài toán về:
-- Khả năng chịu tải đột biến (Spiky traffic) trong các đợt Flash Sale.
-- Cập nhật phiên bản liên tục không gây gián đoạn (Zero-downtime deployment).
-- Phân tách triệt để giữa tải giao dịch trực tuyến (OLTP) và tải phân tích dữ liệu kinh doanh (OLAP).
-- Tận dụng tối đa các dịch vụ quản lý toàn diện (Managed Services) để tối ưu chi phí vận hành.
+Hệ thống Thương mại điện tử được thiết kế theo kiến trúc **Cloud-Native** trên nền tảng **Microsoft Azure**, tập trung vào **Nhánh hiện thực Web** trong Barem chấm điểm:
+- **Nhóm bài toán (Mục 1.1):** Kết hợp **Web ứng dụng**, **Thu thập & Lưu trữ dữ liệu đa mô hình**, **Xử lý tự động (FaaS ETL)** và **Trực quan hóa tổng quan**.
+- **Cơ chế định tuyến biên (Edge Ingress & DNS):** Sử dụng **AKS Application Routing Add-on (Managed NGINX Ingress Controller `v1.11`)** có sẵn của Azure (`IngressClass: webapprouting.kubernetes.azure.com`) kết hợp với tên miền miễn phí của Azure (`http://is402-ecommerce.southeastasia.cloudapp.azure.com` thông qua `azure-dns-label-name`) để định tuyến lưu lượng HTTP vào cụm, trong khi toàn bộ 3 dịch vụ (`Frontend Web`, `User Service`, `Order Service`) đều chạy an toàn qua `ClusterIP` nội bộ.
+
+### Bảng Phiên bản Công nghệ Chuẩn hóa
+
+| Nhóm Thành phần | Công nghệ / Dịch vụ | Phiên bản (Version) | Vai trò trong Hệ thống |
+|:---|:---|:---:|:---|
+| **Container Orchestration** | Azure Kubernetes Service (AKS) | `v1.32` | Điều phối container và quản lý cụm K8s |
+| **Ingress Controller & DNS** | AKS Application Routing Add-on (Managed NGINX) | `NGINX Ingress v1.11` | Định tuyến HTTP (L7 Path-based Routing) qua domain `*.cloudapp.azure.com` |
+| **Frontend Workload** | PHP & Apache HTTP Server | `PHP 8.5.11` / `Apache 2.4.70` | Kết xuất 4 trang Web SSR và giao tiếp REST nội bộ |
+| **Microservice 1 (Auth/User)** | Java & Spring Boot | `Java 25` / `Spring Boot 4.1.2` | Đăng ký, đăng nhập và xác thực tài khoản người dùng |
+| **Microservice 2 (Order)** | Python & FastAPI | `Python 3.15.2` / `FastAPI 0.162.2` | Xử lý mua sản phẩm, gọi User Service, hỗ trợ Blue/Green |
+| **In-Memory Cache & Cart** | Azure Cache for Redis | `Redis 7.2` | Lưu cache sản phẩm (`< 1ms`) và giỏ hàng người dùng |
+| **Relational Database** | Azure DB for PostgreSQL | `Flexible Server v18` | Lưu trữ ACID cho bảng `users` và `products` |
+| **NoSQL Document DB** | Azure Cosmos DB | `Core (SQL) API v4` | Lưu trữ đơn hàng JSON (`orders`) độ trễ `< 10ms` |
+| **Serverless FaaS** | Azure Functions | `Runtime v4` (`Python 3.15.2`) | Bắt sự kiện đơn hàng mới và tự động ETL sang Storage |
+| **Data Lake Storage** | Azure Blob Storage / ADLS Gen2 | `StorageV2` (`Parquet Snappy`) | Lưu dữ liệu ETL đơn hàng và Dataset Benchmark `> 4GB` |
+| **Analytics & BI** | Azure Synapse & Power BI | `Serverless SQL` / `Power BI SaaS` | Truy vấn SQL trên Storage và hiển thị Dashboard cơ bản |
+| **CI/CD & Registry** | GitHub Actions & ACR | `Actions v4` / `Docker 27.x` | Tự động hóa build container image và deploy lên AKS |
 
 ---
 
-## 2. Sơ đồ Kiến trúc Hệ thống (Architecture Diagram)
+## 2. Sơ đồ Kiến trúc Hệ thống (Tỉ lệ chuẩn 16:9)
 
-```mermaid
-flowchart TB
-    subgraph CLIENT["1. EDGE & INGRESS (Perimeter Network)"]
-        User["Client Web / Mobile Browser"] -->|HTTPS :443| LB["Azure Public Load Balancer (L4)"]
-        LB --> Ingress["Ingress NGINX Controller\n(Namespace: ingress-nginx)"]
-    end
+### 2.1 Bản vẽ Kiến trúc Chính thức
+<p align="center">
+  <img src="../../architecture.png" alt="Sơ đồ Kiến trúc Hệ thống Cloud-Native E-Commerce trên Azure" width="100%">
+</p>
 
-    subgraph AKS["2. AKS WORKLOADS (Namespace: ecommerce-prod)"]
-        Ingress -->|Path: / , /detail, /cart| Frontend["Frontend Web Service\n(PHP 8.5 & Apache 2.4)"]
-        Ingress -->|Path: /api/v1/auth/*| UserSvc["User Service\n(Java 25 & Spring Boot 4)"]
-        
-        Frontend -->|REST /cart| OrderK8sSvc["K8s Service: order-svc\n(Selector Switcher)"]
-        OrderK8sSvc -->|Validate JWT Token| UserSvc
-        
-        OrderK8sSvc -->|100% Active Production| OrderBlue["Order Service Blue (v1)\n(Python 3.14 & FastAPI)"]
-        OrderK8sSvc -.->|Staging / Next Release| OrderGreen["Order Service Green (v2)\n(Python 3.14 & FastAPI)"]
-    end
+### 2.2 Sơ đồ ASCII Master Diagram (Tỉ lệ 16:9)
 
-    subgraph PAAS["3. AZURE MANAGED STORES (Polyglot Persistence)"]
-        Frontend -->|Session & Catalog Cache| Redis[("Azure Cache for Redis 7.2\nLatency < 1ms")]
-        UserSvc -->|User Accounts & ACID Logs| Postgres[("Azure DB for PostgreSQL\nFlexible Server v18")]
-        OrderBlue -->|Orders & Shopping Cart| Cosmos[("Azure Cosmos DB Core SQL\nLatency < 10ms")]
-        OrderGreen -.->|Orders & Shopping Cart| Cosmos
-    end
-
-    subgraph FAAS["4. SERVERLESS / FaaS TIER"]
-        Cosmos -->|Change Feed Streaming| AzureFunc["Azure Functions (Python)\nConsumption Plan Y1"]
-        AzureFunc -->|Async Save PDF Invoice| BlobStorage[("Azure Blob Storage\nContainer: invoices")]
-    end
-
-    subgraph LAKEHOUSE["5. DATA LAKEHOUSE & BI TIER"]
-        Postgres -->|Scheduled Export| ADLS[("Azure Data Lake Storage Gen2\nPartitioned Parquet Files > 4GB")]
-        Cosmos -->|Scheduled Export| ADLS
-        ADLS -->|OPENROWSET Distributed Query| Synapse["Azure Synapse Analytics\n(Serverless SQL Pool)"]
-        Synapse -->|DirectQuery Pushdown| PowerBI["Power BI Service Dashboard\n(Dynamic RLS & Mobile Layout)"]
-    end
-
-    subgraph CICD["CI/CD PIPELINE AUTOMATION"]
-        Dev["GitHub Repository"] -->|Push / PR| GHA["GitHub Actions\nDocker Multi-stage Build & Trivy Scan"]
-        GHA -->|Push Images| ACR["Azure Container Registry (ACR)"]
-        ACR -->|Deploy Manifests| AKS
-    end
-
-    classDef edge fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
-    classDef aks fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef paas fill:#ede7f6,stroke:#512da8,stroke-width:2px;
-    classDef faas fill:#fff3e0,stroke:#ef6c00,stroke-width:2px;
-    classDef lake fill:#e0f2f1,stroke:#00695c,stroke-width:2px;
-    classDef cicd fill:#fce4ec,stroke:#c2185b,stroke-width:2px;
-
-    class User,LB,Ingress edge;
-    class Frontend,UserSvc,OrderK8sSvc,OrderBlue,OrderGreen aks;
-    class Redis,Postgres,Cosmos paas;
-    class AzureFunc,BlobStorage faas;
-    class ADLS,Synapse,PowerBI lake;
-    class Dev,GHA,ACR cicd;
+```text
+               ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  ┌───────────────────────────────────────────────────────────┐
+               ┃ MICROSOFT AZURE CLOUD (Subscription: Azure for Students | Region: Southeast Asia)                                      ┃  │ EXTERNAL CI/CD PIPELINE (Outside Azure Resource Group)    │
+               ┃ Resource Group: rg-is402-ecommerce                                                                                     ┃  │                                                           │
+               ┃                                                                                                                        ┃  │              ┌───────────────────────────┐                │
+               ┃  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐  ┃  │              │        [Developer]        │                │
+               ┃  │ Azure Virtual Network: vnet-is402-ecommerce (CIDR: 10.0.0.0/16)                                                  │  ┃  │              └─────────────┬─────────────┘                │
+               ┃  │                                                                                                                  │  ┃  │                            │ git push to main             │
+               ┃  │  ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐  │  ┃  │                            ▼                              │
+               ┃  │  │ Subnet 1: snet-aks (10.0.1.0/24)                                                                           │  │  ┃  │              ┌───────────────────────────┐                │
+               ┃  │  │ ┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐ │  │  ┃  │              │    [GitHub Repository]    │                │
+               ┃  │  │ │ Azure Kubernetes Service: aks-is402-ecommerce (K8s v1.32)                                              │ │  │  ┃  │              └─────────────┬─────────────┘                │
+               ┃  │  │ │                                                                                                        │ │  │  ┃  │                            │ Trigger Workflow             │
+               ┃  │  │ │ ┌────────────────────────────┐  ┌────────────────────────────────────────────────────────────────────┐ │ │  │  ┃  │                            ▼                              │
+               ┃  │  │ │ │ ┌────────────────────────┐ │  │ worker-02 (AKS Node: Standard_D2s_v5)                              │ │ │  │  ┃  │    ┌─────────────────────────────────────────────────┐    │
+               ┃  │  │ │ │ │   AKS Control Plane    │◄┼──┼────────────────────────────────────────────────────────────────────┼─┼─┼──╂──┼────┼───┐  GitHub Actions Runner (Actions v4)             │   │
+               ┃  │  │ │ │ │   (Managed API/etcd)   │ │  │                                     Standby 0%     ┌─────────────┐ │ │ │  │  ┃  │    │   │  ┌─────────────────────────────────────────┐    │ │
+               ┃  │  │ │ │ └────────────────────────┘ │  │  ┌───────────────────────┐       (selector: green) │[order-pod-  │ │ │ │  │  ┃  │    │   │  │ [Job 1: docker-build-and-push]          ├──┐ │ │
+               ┃  │  │ │ │                            │  │  │ [svc: order-svc:8000] ├ - - - - - - - - - - - -►│ green] (v2) │ │ │ │  │  ┃  │    │   │  │ - Docker 27.x Build 3 Container Images  │  │ │ │
+               ┃  │  │ │ │ ┌────────────────────────┐ │  │  │ (ClusterIP Service)   │                         │ (STANDBY)   │ │ │ │  │  ┃  │    │   │  └────────────────────┬────────────────────┘  │ │ │
+[User]         ┃  │  │ │ │ │  AKS App Routing Addon │ │  │  │ Blue/Green Switcher   │      Active 100%        └─────────────┘ │ │ │  │  ┃  │    │   │                       │ (Passed)              │ │ │
+  │            ┃  │  │ │ │ │ (Managed NGINX Ingress │ │  │  │                       ├────────────────────────►┌─────────────┐ │ │ │  │  ┃  │    │   │                       ▼                       │ │ │
+  ▼            ┃  │  │ │ │ │   Controller v1.11)    │ │  │  └───────────▲───────────┘      (selector: blue)   │[order-pod-  │ │ │ │  │  ┃  │    │   │  ┌─────────────────────────────────────────┐  │ │ │
+[Browser] ─────╂──┼──┼─┼─┼─► - app-routing-system   │ │  │              │ (Port 8000)                         │ blue] (v1)  ├─┼─┐ │  │  ┃  │    │   └──┤ [Job 2: deploy-to-aks]                  │  │ │ │
+(HTTP :80      ┃  │  │ │ │ └───────────┬────────────┘ │  │              │                                     │ (ACTIVE)    │ │ │ │  │  ┃  │    │      │ - kubectl apply -f k8s/ (10b. Deploy)   │  │ │ │
+ *.cloudapp.   ┃  │  │ │ │             │ Evaluate     │  │              │                                     │ Python 3.15 │ │ │ │  │  ┃  │    │      └─────────────────────────────────────────┘  │ │ │
+ azure.com)    ┃  │  │ │ │             ▼ Rules        │  │              │                                     │ & FastAPI   │ │◄┼─┼──┼─┐┃  │    └───────────────────────────────────────────────────┼─┘ │
+               ┃  │  │ │ │ ┌────────────────────────┐ │  └──────────────┼─────────────────────────────────────┼──────┬──────┘ │ │ │  │ │┃  └────────────────────────────────────────────────────────┼───┘
+               ┃  │  │ │ │ │ [ing: ecommerce-       │ │                 │ (2. Buy product:                    │      │        │ │ │  │ │┃                                                           │
+               ┃  │  │ │ │ │       ingress]         │ │                 │  POST http://order-svc:8000/orders) │      │(3.Veri-│ │ │  │ │┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┿━━━━━━┓
+               ┃  │  │ │ │ │ (webapprouting.k8s...) │ │                 │                                     │      │ fy: GET│ │ │  │ │ ┌──────────────────────────────────────────────────────┼───┐  ┃
+               ┃  │  │ │ │ └───────────┬────────────┘ │  ┌──────────────┼─────────────────────────────────────┼──────┼──────┐ │ │ │  │ │ │ CONTAINER REGISTRY (Inside rg-is402-ecommerce)       │   │  ┃
+               ┃  │  │ │ │             │ Port 80      │  │ worker-01    │  (AKS Node: Standard_D2s_v5)        │      ▼      │ │ │ │  │ │ │                                    (10a. Push Images)▼   │  ┃
+               ┃  │  │ │ │             │              │  │  ┌───────────┼───────────┐            ┌────────────┴───────────┐ │ │◄┼─┼──┼─┴─┼─(10c. Pull Images) ───── ┌────────────────────────────┐  │  ┃
+               ┃  │  │ │ │             └──────────────┼──┼─►│ [svc: frontend-svc]   │            │ [svc: user-svc]        │ │ │ │ │  │   │  (into worker-01 & 02)   │ [ACR: acris402ecommerce]   │  │  ┃
+               ┃  │  │ │ │                            │  │  │ (ClusterIP :80)       │   ┌───────►│ (ClusterIP :8080)      │ │ │ │ │  │   │                         │ - Azure Container Registry  │  │  ┃
+               ┃  │  │ │ │                            │  │  └───────────┬───────────┘   │        └────────────┬───────────┘ │ │ │ │  │   │                         │ - Basic SKU (php/java/py)   │  │  ┃
+               ┃  │  │ │ │                            │  │              │               │ (1. Auth:           │             │ │ │ │  │   │                         └─────────────────────────────┘  │  ┃
+               ┃  │  │ │ │                            │  │              ▼               │  /login, /register) ▼             │ │ │ │  │   └──────────────────────────────────────────────────────────┘  ┃
+               ┃  │  │ │ │                            │  │  ┌───────────────────────┐   │        ┌────────────────────────┐ │ │ │ │  │                                                                 ┃
+               ┃  │  │ │ │                            │  │  │ [frontend-web-pod]    ├───┘        │ [user-service-pod]     │ │ │ │ │  │   ┌──────────────────────────────────────────────────────────┐  ┃
+               ┃  │  │ │ │                            │  │  │ PHP 8.5.11 & Apache   │            │ Java 25 & Spring 4.1.2 │ │ │ │ │  │   │ SERVERLESS FaaS (AUTO-ETL) & LAKEHOUSE BI (> 4GB)        │  ┃
+               ┃  │  │ │ │                            │  │  │ 2.4.70 (4 pages Web)  │            │ /register,/login,/verif│ │ │ │ │  │   │ (Inside rg-is402-ecommerce)                              │  ┃
+               ┃  │  │ │ │                            │  │  └───────┬───────────────┘            └────────┬───────────────┘ │ │ │ │  │   │                                                          │  ┃
+               ┃  │  │ │ └────────────────────────────┘  └──────────┼─────────────────────────────────────┼─────────────────┘ │ │ │  │   │  ┌────────────────────────┐      ┌────────────────────┐  │  ┃
+               ┃  │  │ └────────────────────────────────────────────┼─────────────────────────────────────┼───────────────────┘ │ │  │   │  │ [Azure Storage Account]│      │ [Azure Synapse]    │  │  ┃
+               ┃  │  └──────────────────────────────────────────────┼─────────────────────────────────────┼─────────────────────┘ │  │   │  │ (ADLS Gen2 - HNS On)   ├─────►│ Serverless SQL Pool│  │  ┃
+               ┃  │                                                 │                                     │                       │  │   │  │ - stis402lakehouse     │ (8.  │ - synw-is402       │  │  ┃
+               ┃  │        (4. TCP :6380: Read/Write Cache & Cart)  │   (5. TCP :5432: Users & Products)  │ (6. HTTPS :443:       │  │   │  │ - orders-etl/ (Parquet)│  SQL │ - View: vw_orders  │  │  ┃
+               ┃  │                                                 │                                     │  Write JSON Orders)   │  │   │  │ - dataset/ (> 4GB)     │ View)└─────────┬──────────┘  │  ┃
+               ┃  │  ┌──────────────────────────────────────────────┼─────────────────────────────────────┼───────────────────┐   │  │   │  └───────────▲────────────┘                │ (9. Direct  │  ┃
+               ┃  │  │ Subnet 2: snet-data (10.0.2.0/24)            ▼                                     ▼                   ▼   │  │   │              │ (7b. Auto-ETL:              ▼     Query)  │  ┃
+               ┃  │  │  ┌──────────────────────────────────┐  ┌──────────────────────────────────┐  ┌───────────────────────────┐ │  │   │              │  Write Parquet)      ┌────────────────────┐  ┃
+               ┃  │  │  │ [Azure Cache for Redis 7.2]      │  │ [Azure DB for PostgreSQL v18]    │  │ [Azure Cosmos DB SQL v4]  │ │  │   │  ┌───────────┴────────────┐      │ [Power BI Service] │  │  ┃
+               ┃  │  │  │ - Name: redis-is402-cache (Basic)│  │ - Name: pg-is402-db (Flex B1ms)  │  │ - Name: cosmos-is402-nosql│ │  │   │  │ [Azure Functions v4]   │      │ - SaaS BI Dashboard│  │  ┃
+               ┃  │  │  │ - Keys: catalog, cart:{userId}   │  │ - DB: ecommerce_db (users, prods)│  │ - Container: orders       │ │  │   │  │ - func-is402-etl (FaaS)│      │ - Report: Sales &  │  │  ┃
+               ┃  │  │  └──────────────────────────────────┘  └──────────────────────────────────┘  └─────────────┬─────────────┘ │  │   │  │ - Python 3.15.2        │      │   Orders Overview  │  │  ┃
+               ┃  │  └────────────────────────────────────────────────────────────────────────────────────────────┼───────────────┘  │   │  └───────────▲────────────┘      └────────────────────┘  │  ┃
+               ┃  └───────────────────────────────────────────────────────────────────────────────────────────────┼──────────────────┘   └──────────────┼──────────────────────────────────────────┘    ┃
+               ┃                                                                                                  └──── (7a. CosmosDBTrigger: Change Feed) ─┘                                           ┃
+               ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ```
 
 ---
 
 ## 3. Phân loại theo Mô hình Dịch vụ Đám mây (IaaS, PaaS, FaaS, SaaS)
 
-Hệ thống được thiết kế bằng cách kết hợp hài hòa cả 4 mô hình dịch vụ đám mây trên Microsoft Azure:
+*(Đáp ứng Mục 1.4 Barem chấm điểm: 0.25đ)*
 
-| Mô hình | Thành phần triển khai trong dự án | Vai trò và Lý do lựa chọn |
+| Mô hình | Thành phần sử dụng trong dự án | Vai trò chính |
 |:---|:---|:---|
-| **IaaS**<br>*(Hạ tầng)* | • **AKS Worker Nodes:** Máy ảo `Standard_D2s_v5` chạy container.<br>• **Azure Virtual Network (VNet):** Phân chia `snet-aks` và `snet-db`.<br>• **Network Security Group (NSG):** Kiểm soát truy cập mạng giữa các subnet. | Cung cấp tài nguyên tính toán (vCPU/RAM) linh hoạt và đảm bảo khả năng cô lập bảo mật mạng riêng biệt. |
-| **PaaS**<br>*(Nền tảng)* | • **AKS Control Plane:** Master nodes do Azure tự động quản lý.<br>• **PostgreSQL Flexible Server:** CSDL quan hệ ACID tự động backup.<br>• **Azure Cosmos DB (Core SQL):** CSDL NoSQL phân tán toàn cầu.<br>• **Azure Cache for Redis:** Bộ nhớ đệm In-Memory siêu tốc.<br>• **Azure Synapse Analytics:** Công cụ Serverless SQL truy vấn Big Data.<br>• **Azure Container Registry (ACR):** Quản lý Docker images riêng tư. | Loại bỏ hoàn toàn chi phí bảo trì hệ điều hành, tự động vá lỗi, có sẵn tính sẵn sàng cao (High Availability). |
-| **FaaS**<br>*(Chức năng)* | • **Azure Functions (Python Model v2):** Chạy trên Consumption Plan, tự động kích hoạt bởi Cosmos DB Change Feed để tạo hóa đơn PDF. | Tối ưu chi phí theo lượng tiêu thụ thực tế (chi phí = $0 khi không có đơn hàng), xử lý bất đồng bộ không gây nghẽn web. |
-| **SaaS**<br>*(Phần mềm)* | • **Power BI Service:** Bảng điều khiển phân tích số liệu trực quan kết nối DirectQuery, bảo mật phân quyền theo dòng (Dynamic RLS).<br>• **GitHub Actions:** Nền tảng tự động hóa CI/CD trên nền cloud. | Cung cấp phần mềm quản trị và phân tích nghiệp vụ sẵn có cho người dùng cuối và đội ngũ vận hành. |
+| **IaaS**<br>*(Hạ tầng)* | • **AKS Worker Nodes (Azure VM):** Máy ảo Ubuntu Linux chạy container.<br>• **Azure Virtual Network (VNet) & NSG:** Hạ tầng mạng ảo và tường lửa kết nối các dịch vụ. | Cung cấp tài nguyên tính toán (vCPU, RAM, Network) nền tảng cho cụm Kubernetes. |
+| **PaaS**<br>*(Nền tảng)* | • **AKS Control Plane (`v1.32`) & Application Routing Add-on (Managed NGINX Ingress):** Điều phối container và định tuyến Ingress tự động.<br>• **Azure DB for PostgreSQL (`v18`):** CSDL quan hệ lưu tài khoản & sản phẩm.<br>• **Azure Cache for Redis (`7.2`):** Bộ nhớ đệm In-Memory lưu cache & giỏ hàng.<br>• **Azure Cosmos DB (`Core SQL v4`):** CSDL NoSQL lưu đơn hàng.<br>• **Azure Storage (Blob / ADLS Gen2):** Lưu trữ dữ liệu ETL và Dataset `> 4GB`.<br>• **Azure Synapse Analytics:** Truy vấn Serverless SQL trên dữ liệu lớn.<br>• **Azure Container Registry (ACR):** Lưu trữ Docker Images riêng tư. | Cung cấp các nền tảng cơ sở dữ liệu, lưu trữ và xử lý được quản lý toàn diện bởi Azure (không cần tự cài đặt/bảo trì OS hay DB engine). |
+| **FaaS**<br>*(Chức năng)* | • **Azure Functions v4 (`Python 3.15.2` - Consumption Plan):** Hàm Serverless tự động kích hoạt khi có đơn hàng mới để thực hiện ETL sang Storage. | Thực thi mã theo sự kiện (Event-driven), tự động scale và chỉ tính phí theo số lần chạy thực tế. |
+| **SaaS**<br>*(Phần mềm)* | • **Power BI Service:** Công cụ hiển thị biểu đồ tổng quan trên trình duyệt.<br>• **GitHub & GitHub Actions:** Quản lý mã nguồn, cộng tác nhóm và chạy CI/CD. | Phần mềm hoàn chỉnh chạy trên đám mây phục vụ trực tiếp người dùng cuối và nhóm phát triển. |
 
 ---
 
-## 4. Chi tiết các Vi dịch vụ (Microservices Workloads)
+## 4. Thiết kế Web 4 Trang & 2 Microservices trên AKS (Barem Mục 4)
 
-Hệ thống chia tách nghiệp vụ thành 3 dịch vụ vi mô độc lập:
+Hệ thống trên AKS gồm **1 ứng dụng Frontend Web** và **2 Microservices nghiệp vụ** (đều chạy `ClusterIP` và được định tuyến qua **AKS Application Routing Add-on - Managed NGINX Ingress Controller `v1.11`** `IngressClass: webapprouting.kubernetes.azure.com` với tên miền miễn phí `http://is402-ecommerce.southeastasia.cloudapp.azure.com`) viết bằng 3 ngôn ngữ theo đúng điều kiện đề bài (**PHP 8.5.11, Java 25, Python 3.15.2**):
 
-### 4.1 Frontend Web Service
-- **Công nghệ:** PHP 8.5, Apache 2.4 (`mpm_event`), CDN UI (Tailwind CSS).
-- **Mô hình hoạt động:** Server-Side Rendering (SSR) nhẹ, khởi động tức thì, không cần bước build phụ trợ.
-- **Chức năng:** Cung cấp 4 giao diện nghiệp vụ:
-  1. *Trang chủ (Catalog Sản phẩm):* Hiển thị danh mục hàng hóa nổi bật.
-  2. *Trang chi tiết sản phẩm:* Thông số kỹ thuật, giá bán và số lượng tồn kho.
-  3. *Trang giỏ hàng:* Thao tác thêm/bớt hàng hóa và cập nhật số lượng.
-  4. *Trang đặt hàng & Xác nhận:* Nhập thông tin giao hàng và gửi yêu cầu tạo đơn.
-- **Tích hợp:** Lưu trữ phiên làm việc (Session) và cache danh mục tại **Azure Cache for Redis**.
+### 4.1 Frontend Web Service — Đủ 4 Trang Chức năng (1.0đ)
+- **Công nghệ:** `PHP 8.5.11` + `Apache 2.4.70` (Định tuyến qua Managed NGINX Ingress tại đường dẫn `/` trên domain `*.southeastasia.cloudapp.azure.com`).
+- **4 Trang bắt buộc theo Barem:**
+  1. **Trang chủ (`/index.php`):** Hiển thị danh sách sản phẩm. Ưu tiên đọc từ **Azure Cache for Redis 7.2** (nếu chưa có cache thì lấy từ PostgreSQL v18 rồi nạp vào Redis).
+  2. **Trang chi tiết sản phẩm (`/detail.php?id=...`):** Hiển thị thông tin chi tiết (tên, mô tả, giá bán) của sản phẩm được chọn và nút "Thêm vào giỏ hàng".
+  3. **Trang thêm vào giỏ hàng (`/add-to-cart.php`):** Tiếp nhận sản phẩm và số lượng người dùng chọn, cập nhật vào giỏ hàng của người dùng lưu trên **Azure Cache for Redis 7.2** và thông báo kết quả.
+  4. **Trang liệt kê giỏ hàng & Mua hàng (`/cart.php`):** Liệt kê các mặt hàng đã thêm từ Redis, tính tổng tiền và cung cấp nút **"Mua sản phẩm"** (gửi yêu cầu đặt hàng sang Order Service qua ClusterIP).
 
-### 4.2 User Service
-- **Công nghệ:** Java 25 LTS, Spring Boot 4.1.1.
-- **Chức năng:** Quản lý tài khoản người dùng, xử lý đăng ký, đăng nhập và phát hành mã định danh an toàn (JSON Web Token - JWT).
-- **Cơ sở dữ liệu:** **Azure Database for PostgreSQL Flexible Server v18**, đảm bảo toàn vẹn dữ liệu và tuân thủ các quy tắc giao dịch ACID.
-
-### 4.3 Order Service
-- **Công nghệ:** Python 3.14, FastAPI (chuẩn ASGI bất đồng bộ hiệu năng cao).
-- **Chức năng:** Tiếp nhận giỏ hàng, xác thực tính hợp lệ qua User Service, tạo đơn hàng và thanh toán mô phỏng (Mock Payment).
-- **Cơ sở dữ liệu:** **Azure Cosmos DB (Core SQL API)** với Partition Key tối ưu `/userId`.
-- **Cơ chế triển khai:** Hỗ trợ mô hình **Blue/Green Deployment** thông qua K8s Service Selector Switcher để cập nhật phiên bản mới với 0% Downtime.
-
----
-
-## 5. Các Luồng Dữ liệu & Xử lý Nghiệp vụ (Data Flows)
-
-### 5.1 Luồng Duyệt Web & Bộ nhớ đệm (Browsing & Redis Cache)
-1. Người dùng gửi yêu cầu HTTPS qua cổng 443 tới **Azure Public Load Balancer**.
-2. **Ingress NGINX** giải mã SSL/TLS và định tuyến yêu cầu tới **Frontend Web Service (PHP)**.
-3. Frontend kiểm tra và truy xuất phiên làm việc (Session) cũng như danh mục hàng hóa hot từ **Azure Cache for Redis** với độ trễ phản hồi $< 1$ms.
-4. Trường hợp cache miss, Frontend truy vấn dữ liệu và cập nhật ngược lại vào Redis.
-
-### 5.2 Luồng Đăng ký & Xác thực Người dùng (Auth Flow)
-1. Người dùng thao tác đăng ký hoặc đăng nhập tại giao diện web.
-2. Yêu cầu chuyển tiếp tới endpoint `/api/v1/auth/*` của **User Service (Java Spring Boot)**.
-3. User Service kiểm tra thông tin, thực hiện mã hóa bảo mật và đọc/ghi vào **Azure PostgreSQL**.
-4. Khi đăng nhập thành công, User Service cấp phát mã **JWT Token** trả về cho client lưu trữ.
-
-### 5.3 Luồng Đặt hàng & Giao tiếp Liên Dịch vụ (Order & Inter-service Flow)
-1. Khách hàng bấm "Đặt hàng", Frontend gửi request kèm JWT Token trực tiếp tới `K8s Service: order-svc`.
-2. `order-svc` gọi nội bộ tới endpoint `/api/v1/auth/validate` của **User Service** để xác thực tính hợp lệ của người dùng.
-3. Khi thông tin hợp lệ, `order-svc` điều phối yêu cầu vào Pod đang hoạt động (**Order Service Blue**).
-4. Order Service xử lý logic đơn hàng, kiểm tra thanh toán mô phỏng và ghi dữ liệu vào **Azure Cosmos DB** với độ trễ $< 10$ms.
-
-### 5.4 Luồng Xử lý Bất đồng bộ FaaS (Event-driven Invoicing Flow)
-1. Bản ghi đơn hàng mới được tạo lập trong Cosmos DB sẽ ngay lập tức được đẩy vào luồng **Cosmos DB Change Feed**.
-2. Sự kiện này kích hoạt hàm phi máy chủ **Azure Functions (Python)**.
-3. Hàm Functions tự động tạo file hóa đơn PDF, lưu trữ vào container `invoices` trên **Azure Blob Storage** và ghi nhận log thông báo.
-4. Toàn bộ quá trình chạy hoàn toàn phi đồng bộ trong nền, không làm ảnh hưởng đến tốc độ phản hồi của khách hàng.
-
-### 5.5 Luồng Hồ Dữ liệu Lakehouse & Phân tích BI (Analytics Flow)
-1. Dữ liệu từ PostgreSQL (User/Audit logs) và Cosmos DB (Orders) được kết xuất định kỳ sang **Azure Data Lake Storage Gen2 (ADLS Gen2)** dưới định dạng cột nén **Apache Parquet**.
-2. Dung lượng tập dữ liệu trên hồ đạt quy mô lớn ($> 4$GB), được tổ chức phân vùng theo thời gian (`/year/month/`).
-3. **Azure Synapse Analytics (Serverless SQL Pool)** sử dụng câu lệnh `OPENROWSET` để ánh xạ và tạo các **Star Schema Views** (`fact_orders`, `dim_customer`, `dim_product`, ...).
-4. **Power BI Service** kết nối tới Synapse qua chế độ **DirectQuery**, trực quan hóa 4 trang báo cáo phân tích theo thời gian thực kết hợp bảo mật phân quyền theo dòng (Dynamic RLS).
+### 4.2 Hai Microservices Nghiệp vụ & Giao tiếp Liên Dịch vụ (1.0đ)
+1. **Service 1 — Đăng ký tài khoản người dùng (`User Service`):**
+   - **Công nghệ:** `Java 25` + `Spring Boot 4.1.2` (`ClusterIP: user-svc:8080`).
+   - **Cơ sở dữ liệu:** **Azure Database for PostgreSQL Flexible Server v18** (bảng `users` và bảng `products`).
+   - **Endpoints chính:**
+     - `POST /api/users/register`: Đăng ký tài khoản người dùng mới.
+     - `POST /api/users/login`: Đăng nhập và trả về thông tin định danh (`userId`).
+     - `GET /api/users/verify/{userId}`: API nội bộ để `Order Service` kiểm tra tài khoản có tồn tại và hợp lệ hay không.
+2. **Service 2 — Mua sản phẩm (`Order Service`):**
+   - **Công nghệ:** `Python 3.15.2` + `FastAPI 0.162.2` (`ClusterIP: order-svc:8000`).
+   - **Cơ sở dữ liệu:** **Azure Cosmos DB (Core SQL API v4)** — container `orders` (Partition Key: `/userId`).
+   - **Cơ chế giao tiếp giữa 2 Service:**
+     - Khi người dùng bấm "Mua sản phẩm", Frontend PHP gửi `userId` và danh sách mặt hàng tới `POST http://order-svc:8000/api/orders` của **Order Service (Python 3.15.2)**.
+     - **Order Service (Python 3.15.2)** gọi HTTP GET nội bộ qua K8s DNS (`http://user-svc:8080/api/users/verify/{userId}`) sang **User Service (Java 25)**.
+     - Nếu User Service xác nhận người dùng hợp lệ (`HTTP 200`), Order Service tạo bản ghi đơn hàng và lưu vào **Azure Cosmos DB**.
 
 ---
 
-## 6. Mô hình Dữ liệu & Lưu trữ Đa tầng (Storage & Lakehouse)
+## 5. Mô hình Lưu trữ Đa tầng & Luồng Dữ liệu (Barem Mục 2 & 3)
 
-Hệ thống áp dụng mô hình **Polyglot Persistence**, sử dụng đúng công nghệ lưu trữ cho từng loại dữ liệu:
+### 5.1 Tổ chức Định dạng Lưu trữ Đa mô hình (Barem Mục 2.1)
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                        CHIẾN LƯỢC LƯU TRỮ ĐA MÔ HÌNH (POLYGLOT PERSISTENCE)            │
-├───────────────────────┬──────────────────────────────┬─────────────────────────────────┤
-│ Loại dữ liệu          │ Công nghệ Azure              │ Đặc tính kỹ thuật               │
-├───────────────────────┼──────────────────────────────┼─────────────────────────────────┤
-│ Session & Hot Cache   │ Azure Cache for Redis 7.2    │ In-Memory, Key-Value, < 1ms     │
-│ User & Auth (ACID)    │ Azure DB for PostgreSQL v18  │ Relational, B-Tree Index, ACID  │
-│ Orders & Giỏ hàng     │ Azure Cosmos DB Core SQL     │ NoSQL Document JSON, SLA < 10ms │
-│ File Hóa đơn PDF      │ Azure Blob Storage           │ Object Storage, Hot Tier        │
-│ Hồ phân tích Big Data │ ADLS Gen2                    │ Apache Parquet Snappy, > 4GB    │
-│ Phân tích BI Engine   │ Azure Synapse Serverless SQL │ Star Schema, DirectQuery Push   │
-└───────────────────────┴──────────────────────────────┴─────────────────────────────────┘
-```
+| Dịch vụ Azure | Định dạng & Cấu trúc lưu trữ | Dữ liệu lưu trữ trong dự án | Lý do lựa chọn & Tối ưu hóa (Mục 3.4) |
+|:---|:---|:---|:---|
+| **Azure DB for PostgreSQL v18** | Quan hệ (Relational Tables), B-Tree Index | Bảng `users` (tài khoản) & bảng `products` (danh mục gốc) | Đảm bảo tính toàn vẹn ACID cho dữ liệu tài khoản và danh mục chuẩn. |
+| **Azure Cache for Redis 7.2** | In-Memory Key-Value (`String` / `Hash`, JSON) | Key `catalog:products` (Cache SP) & `cart:{userId}` (Giỏ hàng) | Độ trễ `< 1ms`, giảm tải truy vấn lặp lại vào PostgreSQL (**Cache-Aside Pattern**). |
+| **Azure Cosmos DB (Core SQL v4)** | NoSQL Document (JSON bán cấu trúc) | Container `orders` (Đơn mua hàng của khách) | Ghi dữ liệu đơn hàng tốc độ cao (`< 10ms`), linh hoạt schema và hỗ trợ Change Feed. |
+| **Azure Storage (ADLS Gen2 / Blob)** | Tập tin Cột nén (`Apache Parquet`) & `CSV/JSON` | Dữ liệu đơn hàng ETL từ Web + **Dataset lịch sử `> 4GB`** | Lưu trữ dung lượng lớn chi phí rẻ, định dạng cột Parquet giúp Synapse quét dữ liệu cực nhanh. |
+
+### 5.2 Luồng Xử lý Dữ liệu Tự động ETL bằng FaaS (Barem Mục 3.2 & 4.4 — 1.0đ)
+Dự án thiết kế một luồng **Event-driven Auto-ETL** thống nhất:
+1. **Receive (Web -> Cosmos DB):** Khách hàng đặt mua trên Web -> `Order Service` ghi đơn hàng mới vào container `orders` trên **Azure Cosmos DB**.
+2. **Detect & Extract (Cosmos DB -> Azure Functions):** Ngay khi có đơn hàng mới, **Azure Functions v4 (`Python 3.15.2`)** được kích hoạt tự động (thông qua Cosmos DB Trigger / Change Feed).
+3. **Transform & Load (Azure Functions -> Azure Storage):** Hàm Function trích xuất các trường quan trọng (`orderId`, `userId`, `totalAmount`, `itemsCount`, `createdAt`), chuẩn hóa định dạng và ghi tự động vào thư mục `orders-etl/` trên **Azure Storage (Blob / ADLS Gen2)**.
+4. **Analyze & Visualize (Storage -> Synapse -> Power BI):** **Azure Synapse Serverless SQL** đọc dữ liệu từ Storage qua View SQL và cung cấp cho **Power BI** hiển thị biểu đồ tổng quan doanh thu/đơn hàng.
 
 ---
 
-## 7. Cơ chế Triển khai Blue/Green & Tự động hóa CI/CD
+## 6. Cơ chế Triển khai Blue/Green & Tự động hóa CI/CD
 
-### 7.1 Phát hành Blue/Green với 0% Downtime
-- Quá trình triển khai duy trì đồng thời 2 bản Deployment trên cụm AKS:
-  - `order-service-blue`: Phiên bản đang chạy chính thức (Production).
-  - `order-service-green`: Phiên bản cập nhật mới (Release Candidate).
-- `order-svc` là một Kubernetes ClusterIP Service sử dụng nhãn định tuyến `selector: app=order, version=blue`.
-- Khi phiên bản Green vượt qua các bài kiểm tra chất lượng, kỹ sư hoặc pipeline thực hiện hoán đổi nhãn (`version: green`).
-- Lưu lượng chuyển đổi tức thời sang phiên bản mới mà người dùng không gặp bất kỳ gián đoạn nào (Zero Downtime). Nếu xảy ra sự cố, nhãn có thể được hoán đổi ngược lại ngay lập tức (Instant Rollback).
+### 6.1 Triển khai Blue/Green trên AKS (Barem Mục 4.2 — 0.5đ)
+- Trên AKS tồn tại song song 2 Deployment của dịch vụ mua hàng (`Python 3.15.2` & `FastAPI 0.162.2`):
+  - `order-service-blue` (nhãn `app: order, version: blue` — trả về `"version": "v1-blue"`).
+  - `order-service-green` (nhãn `app: order, version: green` — trả về `"version": "v2-green"`).
+- Kubernetes Service `order-svc` (`ClusterIP`) đóng vai trò bộ chuyển mạch thông qua trường `selector`.
+- Khi cần chuyển từ bản Blue sang bản Green với **0% Downtime**, chỉ cần cập nhật selector của `order-svc` sang `version: green` bằng lệnh `kubectl patch service`.
 
-### 7.2 Tự động hóa CI/CD qua GitHub Actions
-1. **Source Control:** Mã nguồn được quản lý tập trung trên GitHub.
-2. **Build & Scan:** Khi có mã mới đẩy vào nhánh chính, GitHub Actions kích hoạt:
-   - Build Docker Image theo cơ chế Multi-stage Build để tối ưu kích thước.
-   - Sử dụng công cụ **Trivy Scanner** quét lỗ hổng bảo mật image trước khi đẩy lên registry.
-3. **Container Registry:** Image đạt tiêu chuẩn an toàn được lưu trữ trên **Azure Container Registry (ACR)** với cơ chế gắn nhãn phiên bản (`git.sha`).
-4. **Deploy:** Pipeline tự động áp dụng Kubernetes Manifests cập nhật pod trên **Azure Kubernetes Service (AKS)**.
+### 6.2 Tự động hóa CI/CD qua GitHub Actions
+- Khi thành viên push code lên nhánh `main` trên GitHub:
+  1. **GitHub Actions** tự động chạy `docker build` cho 3 service (`frontend-php`, `user-service`, `order-service`).
+  2. Đẩy Docker Images mới lên **Azure Container Registry (ACR)**.
+  3. Tự động chạy `kubectl apply` để cập nhật các Deployment trên cụm **AKS v1.32**.
 
+---
+
+## 7. Thiết kế Thực nghiệm Đo kiểm Hiệu năng (Benchmark & Latency)
+
+Để lấy trọn điểm thực nghiệm ở **Mục 1.3 (0.75đ)** và **Mục 3.1, 3.3, 3.4 (1.5đ)**, dự án thiết kế 3 kịch bản đo kiểm rõ ràng:
+
+### 7.1 Thực nghiệm 1: Xử lý Dataset `> 4GB` — Máy chủ Truyền thống (Local) vs Cloud (Mục 1.3)
+- **Chuẩn bị:** Tập dữ liệu lịch sử giao dịch thương mại điện tử dung lượng **`> 4GB`** đặt trên máy Local và trên **Azure Storage (ADLS Gen2)**.
+- **Thực hiện:** Chạy cùng một truy vấn tổng hợp (thống kê tổng doanh thu, số lượng đơn hàng theo danh mục/tháng trên toàn bộ tập `> 4GB`):
+  - **Trường hợp 1 (Máy truyền thống / Local):** Chạy script xử lý trên máy cá nhân (giới hạn CPU/RAM cục bộ và tốc độ đọc ổ đĩa).
+  - **Trường hợp 2 (Hệ thống Cloud):** Chạy truy vấn phân tán qua **Azure Synapse Serverless SQL Pool** trực tiếp trên tập Parquet ở Azure Storage.
+- **Kết quả thu thập:** Bảng và biểu đồ so sánh thời gian hoàn thành (giây), mức tiêu thụ RAM/CPU.
+
+### 7.2 Thực nghiệm 2: Tốc độ Đọc/Ghi & Tối ưu hóa bằng Redis Cache (Mục 3.1 & 3.4)
+- **Thực hiện:** Đo thời gian phản hồi (ms) và thông lượng (requests/sec) khi ứng dụng Web truy xuất danh mục sản phẩm và giỏ hàng:
+  - **Không có Cache (Direct DB):** Đọc trực tiếp từ Azure PostgreSQL v18 (`~15ms - 40ms`).
+  - **Có tối ưu hóa Redis Cache-Aside:** Đọc từ Azure Cache for Redis 7.2 (`< 1ms - 3ms`).
+- **Kết quả thu thập:** Bảng so sánh tốc độ đọc/ghi của PostgreSQL v18, Cosmos DB, Redis 7.2 và mức cải thiện hiệu năng nhờ Redis Cache.
+
+### 7.3 Thực nghiệm 3: Đo Độ trễ (Delay) khi Đặt Server ở Region khác (Mục 3.3)
+- **Thực hiện:** Đo độ trễ mạng và thời gian truy vấn (Latency RTT tính bằng `ms`) từ ứng dụng/script kiểm thử đặt tại **Southeast Asia (Singapore)** tới dịch vụ lưu trữ/DB đặt tại:
+  - **Cùng Region (Same-Region):** `Southeast Asia (Singapore)`.
+  - **Khác Region (Cross-Region):** `East US (Mỹ)` hoặc `West Europe (Châu Âu)`.
+- **Kết quả thu thập:** Bảng thống kê độ trễ Min / Avg / Max / P95 (`ms`) chứng minh tác động của khoảng cách địa lý giữa các Region và giải pháp tối ưu.

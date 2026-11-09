@@ -12,10 +12,9 @@
 ## MỤC LỤC
 - [1. Giới thiệu & Thành viên nhóm](#1-giới-thiệu--thành-viên-nhóm)
 - [2. Kiến trúc & Công nghệ](#2-kiến-trúc--công-nghệ)
-- [3. Hạ tầng IaC & CI/CD Pipeline](#3-hạ-tầng-iac--cicd-pipeline)
+- [3. Hạ tầng và Pipeline](#3-hạ-tầng-và-pipeline)
 - [4. Hướng dẫn khởi chạy](#4-hướng-dẫn-khởi-chạy)
-- [5. Giám sát](#5-giám-sát)
-- [6. Tài liệu tham khảo](#6-tài-liệu-tham-khảo)
+- [5. Tài liệu tham khảo & tài liệu dự án](#5-tài-liệu-tham-khảo--tài-liệu-dự-án)
 
 ---
 
@@ -25,40 +24,54 @@
 - **Môn học:** IS402 - Điện toán đám mây (IS402.R11 — HK2 2025-2026)
 - **Đơn vị:** Khoa Hệ thống Thông tin — Trường Đại học Công nghệ Thông tin, ĐHQG-HCM (UIT)
 - **Tên bài tập:** **Bài tập 07: Triển khai ứng dụng trên cloud (Cloud-native applications)**
-- **Ngôn ngữ triển khai:** PHP 8.5, Java 25 LTS, Python 3.14
+- **Ngôn ngữ & Framework triển khai:** `PHP 8.5.11` (`Apache 2.4.70`), `Java 25` (`Spring Boot 4.1.2`), `Python 3.15.2` (`FastAPI 0.162.2`)
 - **Mô tả đề tài:**  
-  Xây dựng hệ thống thương mại điện tử phân tán trên nền tảng Microsoft Azure theo chuẩn kiến trúc Cloud-Native. Hệ thống áp dụng mô hình vi dịch vụ (Microservices), điều phối container trên Kubernetes, xử lý không đồng bộ qua Serverless FaaS, đa dạng hóa lưu trữ dữ liệu (Polyglot Persistence) và tích hợp hồ dữ liệu Lakehouse phục vụ phân tích kinh doanh thông minh (Business Intelligence).
+  Xây dựng ứng dụng Web Thương mại điện tử theo kiến trúc Cloud-Native trên Microsoft Azure. Hệ thống đóng gói container chạy trên **AKS v1.32**, định tuyến qua **AKS Application Routing Add-on (Managed NGINX Ingress Controller)**, tự động hóa **CI/CD** qua GitHub Actions, kết hợp 3 dịch vụ lưu trữ quản lý (**PostgreSQL v18**, **Redis 7.2**, **Cosmos DB v4**), sử dụng **Azure Functions v4 (FaaS)** để tự động ETL dữ liệu đơn hàng mới sang **Azure Storage** phục vụ truy vấn dữ liệu lớn (`> 4GB`) trên **Azure Synapse Analytics** và hiển thị biểu đồ tổng quan trên **Power BI**.
 
 ### 1.2 Thành viên nhóm
 
 | STT | MSSV | Họ và Tên | Vai trò chính trong dự án | Github | Email |
 |:---:|:---:|:---|:---|:---|:---|
-| 1 | 23521367 | **Ngô Tiến Sỹ** | **Trưởng nhóm** — Quản trị Hạ tầng Cloud (AKS, VNet), Ingress NGINX, CI/CD Pipeline & FinOps | [@helios-ryuu](https://github.com/helios-ryuu) | 23521367@gm.uit.edu.vn |
-| 2 | 23520214 | **Lê Quốc Đại** | Frontend Web (PHP/CDN), User Service (Java Spring Boot), PostgreSQL 18 & Redis Cache | [@daile2701](https://github.com/daile2701) | 23520214@gm.uit.edu.vn |
-| 3 | 23521192 | **Đào Bảo Phúc** | Order Service (FastAPI), Azure Cosmos DB, Azure Functions (FaaS), Dataset Parquet & Power BI | [@baorphuc](https://github.com/baorphuc) | 23521192@gm.uit.edu.vn |
+| 1 | 23521367 | **Ngô Tiến Sỹ** | **Trưởng nhóm** — Hạ tầng AKS v1.32 & Managed NGINX Ingress Add-on, K8s Blue/Green, CI/CD GitHub Actions, Benchmark `>4GB` & Cross-Region Latency | [@helios-ryuu](https://github.com/helios-ryuu) | 23521367@gm.uit.edu.vn |
+| 2 | 23520214 | **Lê Quốc Đại** | Frontend Web 4 trang (`PHP 8.5.11`), User Service (`Java 25` & `Spring Boot 4.1.2`), Azure PostgreSQL v18 & Azure Cache for Redis 7.2 | [@daile2701](https://github.com/daile2701) | 23520214@gm.uit.edu.vn |
+| 3 | 23521192 | **Đào Bảo Phúc** | Order Service (`Python 3.15.2` & `FastAPI 0.162.2`), Azure Cosmos DB, Azure Functions v4 (FaaS Auto-ETL), Synapse SQL & Power BI | [@baorphuc](https://github.com/baorphuc) | 23521192@gm.uit.edu.vn |
 
 ---
 
 ## 2. Kiến trúc & Công nghệ
 
 ### 2.1 Danh mục Công nghệ
-- **Container Orchestration:** Azure Kubernetes Service (AKS v1.31)
-- **Microservices:** PHP 8.5 (Frontend SSR), Java 25 LTS / Spring Boot 4.1.1 (User Service), Python 3.14 / FastAPI (Order Service)
-- **Cơ sở dữ liệu & Caching (PaaS):** Azure Cache for Redis 7.2, Azure Database for PostgreSQL Flexible Server v18, Azure Cosmos DB (Core SQL API)
-- **Serverless Compute (FaaS):** Azure Functions (Python Programming Model v2)
-- **Data Lakehouse & BI:** Azure Data Lake Storage Gen2 (ADLS Gen2), Azure Synapse Analytics (Serverless SQL Pool), Power BI Service
-- **CI/CD & DevSecOps:** GitHub Actions, Azure Container Registry (ACR), Trivy Security Scanner
+- **Container, Orchestration & Ingress:** Docker `27.x`, Azure Container Registry (ACR), Azure Kubernetes Service (`AKS v1.32`), AKS Application Routing Add-on (`Managed NGINX Ingress Controller v1.11`).
+- **Ứng dụng Web & Microservices:**
+  - **Frontend Web (`PHP 8.5.11` + `Apache 2.4.70`):** 4 trang chức năng (Trang chủ, Trang chi tiết, Trang thêm vào giỏ hàng, Trang liệt kê giỏ hàng), kết nối Redis để đọc cache sản phẩm và quản lý giỏ hàng.
+  - **User Service (`Java 25` + `Spring Boot 4.1.2`):** Quản lý đăng ký, đăng nhập tài khoản và API xác thực người dùng.
+  - **Order Service (`Python 3.15.2` + `FastAPI 0.162.2`):** Xử lý mua sản phẩm, giao tiếp nội bộ với User Service, hỗ trợ triển khai Blue/Green.
+- **Công nghệ Lưu trữ (Managed Services):**
+  - **Azure Database for PostgreSQL (`Flexible Server v18`):** Lưu trữ bảng `users` và danh mục `products` gốc.
+  - **Azure Cache for Redis (`Redis 7.2`):** Cache danh mục sản phẩm (`Cache-Aside`) và lưu giỏ hàng tạm thời.
+  - **Azure Cosmos DB (`Core SQL API v4`):** Lưu trữ tài liệu đơn hàng (`orders`) tốc độ cao.
+- **FaaS & Phân tích Dữ liệu (ETL + Analytics):**
+  - **Azure Functions (`Runtime v4` - `Python 3.15.2`):** Tự động bắt sự kiện đơn hàng mới từ Cosmos DB và xuất sang Azure Storage (Auto-ETL).
+  - **Azure Blob Storage / ADLS Gen2 (`StorageV2`):** Lưu trữ dữ liệu đơn hàng ETL và bộ Dataset `> 4GB` phục vụ benchmark.
+  - **Azure Synapse Analytics & Power BI:** Truy vấn Serverless SQL trên Storage và hiển thị Dashboard tổng quan.
 
 ### 2.2 Sơ đồ Kiến trúc Tổng thể
-Sơ đồ kiến trúc toàn cảnh và luồng xử lý chi tiết được mô tả tại:
-- [Tài liệu Thiết kế Kiến trúc Hệ thống (Markdown & Mermaid)](./docs/2-planning-phase/architecture.md)
-- [Bản Thuyết minh Kiến trúc & Cẩm nang Bản vẽ (`arch.txt`)](./arch.txt)
+<p align="center">
+  <img src="./architecture.png" alt="Sơ đồ Kiến trúc Hệ thống Cloud-Native E-Commerce trên Azure" width="100%">
+</p>
+
+Chi tiết sơ đồ kiến trúc và luồng xử lý 10 bước của hệ thống xem tại:
+- [Thiết kế Kiến trúc Hệ thống (`architecture.md`)](./docs/2-planning-phase/architecture.md)
 
 ---
 
-## 3. Hạ tầng IaC & CI/CD Pipeline
+## 3. Hạ tầng và Pipeline
 
-*(Coming soon)*
+- **Hạ tầng Đám mây (Azure Infrastructure):**
+  - Cụm **AKS `v1.32`** bật sẵn **Application Routing Add-on (Managed NGINX Ingress Controller `v1.11`)** (`IngressClass: webapprouting.kubernetes.azure.com`), truy cập qua tên miền miễn phí của Azure (`http://is402-ecommerce.southeastasia.cloudapp.azure.com`).
+  - Các dịch vụ `frontend-svc`, `user-svc`, `order-svc` hoạt động qua `ClusterIP` nội bộ; `order-svc` hỗ trợ chuyển đổi phiên bản **Blue/Green (`v1` / `v2`)** không gián đoạn.
+- **Tự động hóa CI/CD (GitHub Actions):**
+  - Tự động đóng gói Docker image cho 3 dịch vụ (`PHP 8.5.11`, `Java 25`, `Python 3.15.2`), đẩy lên **Azure Container Registry (ACR)** và cập nhật Kubernetes Manifests lên cụm **AKS**.
 
 ---
 
@@ -68,15 +81,14 @@ Sơ đồ kiến trúc toàn cảnh và luồng xử lý chi tiết được mô
 
 ---
 
-## 5. Giám sát
+## 5. Tài liệu tham khảo & tài liệu dự án
 
-*(Coming soon)*
+### 5.1 Tài liệu dự án
+1. [Hiến chương Dự án (`project-charter.md`)](./docs/1-initiation-phase/project-charter.md)
+2. [Thiết kế Kiến trúc Hệ thống (`architecture.md`)](./docs/2-planning-phase/architecture.md)
+3. [Đặc tả Yêu cầu Chức năng (`functional-requirements.md`)](./docs/2-planning-phase/functional-requirements.md)
+4. [Cấu trúc Phân rã Công việc & Tiến độ (`wbs.md`)](./docs/2-planning-phase/wbs.md)
 
----
-
-## 6. Tài liệu tham khảo
-
-1. [Hiến chương Dự án (Project Charter)](./docs/1-initiation-phase/project-charter.md)
-2. [Tài liệu Thiết kế Kiến trúc Hệ thống](./docs/2-planning-phase/architecture.md)
-3. [Bản Thuyết minh Kiến trúc & Cẩm nang Bản vẽ (`arch.txt`)](./arch.txt)
-4. [Microsoft Learn: Cloud-native applications architecture on Azure](https://learn.microsoft.com/en-us/azure/architecture/solution-ideas/articles/cloud-native-apps)
+### 5.2 Tài liệu tham khảo
+1. [Microsoft Learn: Cloud-native applications architecture on Azure](https://learn.microsoft.com/en-us/azure/architecture/solution-ideas/articles/cloud-native-apps)
+2. [Azure Kubernetes Service (AKS) Application Routing Add-on](https://learn.microsoft.com/en-us/azure/aks/app-routing)
