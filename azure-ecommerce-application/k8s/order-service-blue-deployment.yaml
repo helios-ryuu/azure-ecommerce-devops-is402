@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service-blue
+  labels:
+    app: order-service
+    version: blue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-service
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: order-service
+        version: blue
+    spec:
+      containers:
+      - name: order-service
+        image: acris402ecommerce.azurecr.io/order-service:v1-blue
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: SERVICE_VERSION
+          valueFrom:
+            secretKeyRef:
+              name: order-service-secrets
+              key: SERVICE_VERSION
+        - name: COSMOS_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: order-service-secrets
+              key: COSMOS_ENDPOINT
+        - name: COSMOS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: order-service-secrets
+              key: COSMOS_KEY
+        - name: COSMOS_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: order-service-secrets
+              key: COSMOS_DATABASE
+        - name: COSMOS_CONTAINER
+          valueFrom:
+            secretKeyRef:
+              name: order-service-secrets
+              key: COSMOS_CONTAINER
+        - name: USER_SVC_URL
+          valueFrom:
+            secretKeyRef:
+              name: order-service-secrets
+              key: USER_SVC_URL
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
