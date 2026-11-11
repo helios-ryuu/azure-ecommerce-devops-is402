@@ -43,3 +43,8 @@ Thumbs.db
 *~
 *.bkp
 .$*
+
+# --- Kubernetes secrets (KHÔNG commit file chứa secret thật) ---
+*.secret.yaml
+*secret*
+k8s/*secret*
