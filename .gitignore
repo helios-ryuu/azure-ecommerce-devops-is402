@@ -1,6 +1,9 @@
 # Local credentials and sensitive files
 contributor.json
 init.log
+secrets/
+**/secrets/
+*-password.txt
 
 # Local environment variables
 .env

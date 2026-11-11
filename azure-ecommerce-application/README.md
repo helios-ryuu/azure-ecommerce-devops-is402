@@ -24,7 +24,7 @@
 - **Môn học:** IS402 - Điện toán đám mây (IS402.R11 — HK2 2025-2026)
 - **Đơn vị:** Khoa Hệ thống Thông tin — Trường Đại học Công nghệ Thông tin, ĐHQG-HCM (UIT)
 - **Tên bài tập:** **Bài tập 07: Triển khai ứng dụng trên cloud (Cloud-native applications)**
-- **Ngôn ngữ & Framework triển khai:** `PHP 8.5.11` (`Apache 2.4.70`), `Java 25` (`Spring Boot 4.1.2`), `Python 3.15.2` (`FastAPI 0.162.2`)
+- **Ngôn ngữ & Framework triển khai:** `PHP 8.5.11` (`Apache 2.4.70`), `Java 25` (`Spring Boot 4.1.2`), `Python 3.14` (`FastAPI 0.162.2`)
 - **Mô tả đề tài:**  
   Xây dựng ứng dụng Web Thương mại điện tử theo kiến trúc Cloud-Native trên Microsoft Azure. Hệ thống đóng gói container chạy trên **AKS v1.32**, định tuyến qua **AKS Application Routing Add-on (Managed NGINX Ingress Controller)**, tự động hóa **CI/CD** qua GitHub Actions, kết hợp 3 dịch vụ lưu trữ quản lý (**PostgreSQL v18**, **Redis 7.2**, **Cosmos DB v4**), sử dụng **Azure Functions v4 (FaaS)** để tự động ETL dữ liệu đơn hàng mới sang **Azure Storage** phục vụ truy vấn dữ liệu lớn (`> 4GB`) trên **Azure Synapse Analytics** và hiển thị biểu đồ tổng quan trên **Power BI**.
 
@@ -34,7 +34,7 @@
 |:---:|:---:|:---|:---|:---|:---|
 | 1 | 23521367 | **Ngô Tiến Sỹ** | **Trưởng nhóm** — Hạ tầng AKS v1.32 & Managed NGINX Ingress Add-on, K8s Blue/Green, CI/CD GitHub Actions, Benchmark `>4GB` & Cross-Region Latency | [@helios-ryuu](https://github.com/helios-ryuu) | 23521367@gm.uit.edu.vn |
 | 2 | 23520214 | **Lê Quốc Đại** | Frontend Web 4 trang (`PHP 8.5.11`), User Service (`Java 25` & `Spring Boot 4.1.2`), Azure PostgreSQL v18 & Azure Cache for Redis 7.2 | [@daile2701](https://github.com/daile2701) | 23520214@gm.uit.edu.vn |
-| 3 | 23521192 | **Đào Bảo Phúc** | Order Service (`Python 3.15.2` & `FastAPI 0.162.2`), Azure Cosmos DB, Azure Functions v4 (FaaS Auto-ETL), Synapse SQL & Power BI | [@baorphuc](https://github.com/baorphuc) | 23521192@gm.uit.edu.vn |
+| 3 | 23521192 | **Đào Bảo Phúc** | Order Service (`Python 3.14` & `FastAPI 0.162.2`), Azure Cosmos DB, Azure Functions v4 (FaaS Auto-ETL), Synapse SQL & Power BI | [@baorphuc](https://github.com/baorphuc) | 23521192@gm.uit.edu.vn |
 
 ---
 
@@ -45,13 +45,13 @@
 - **Ứng dụng Web & Microservices:**
   - **Frontend Web (`PHP 8.5.11` + `Apache 2.4.70`):** 4 trang chức năng (Trang chủ, Trang chi tiết, Trang thêm vào giỏ hàng, Trang liệt kê giỏ hàng), kết nối Redis để đọc cache sản phẩm và quản lý giỏ hàng.
   - **User Service (`Java 25` + `Spring Boot 4.1.2`):** Quản lý đăng ký, đăng nhập tài khoản và API xác thực người dùng.
-  - **Order Service (`Python 3.15.2` + `FastAPI 0.162.2`):** Xử lý mua sản phẩm, giao tiếp nội bộ với User Service, hỗ trợ triển khai Blue/Green.
+  - **Order Service (`Python 3.14` + `FastAPI 0.162.2`):** Xử lý mua sản phẩm, giao tiếp nội bộ với User Service, hỗ trợ triển khai Blue/Green.
 - **Công nghệ Lưu trữ (Managed Services):**
   - **Azure Database for PostgreSQL (`Flexible Server v18`):** Lưu trữ bảng `users` và danh mục `products` gốc.
   - **Azure Cache for Redis (`Redis 7.2`):** Cache danh mục sản phẩm (`Cache-Aside`) và lưu giỏ hàng tạm thời.
   - **Azure Cosmos DB (`Core SQL API v4`):** Lưu trữ tài liệu đơn hàng (`orders`) tốc độ cao.
 - **FaaS & Phân tích Dữ liệu (ETL + Analytics):**
-  - **Azure Functions (`Runtime v4` - `Python 3.15.2`):** Tự động bắt sự kiện đơn hàng mới từ Cosmos DB và xuất sang Azure Storage (Auto-ETL).
+  - **Azure Functions (`Runtime v4` - `Python 3.14`):** Tự động bắt sự kiện đơn hàng mới từ Cosmos DB và xuất sang Azure Storage (Auto-ETL).
   - **Azure Blob Storage / ADLS Gen2 (`StorageV2`):** Lưu trữ dữ liệu đơn hàng ETL và bộ Dataset `> 4GB` phục vụ benchmark.
   - **Azure Synapse Analytics & Power BI:** Truy vấn Serverless SQL trên Storage và hiển thị Dashboard tổng quan.
 
@@ -68,10 +68,10 @@ Chi tiết sơ đồ kiến trúc và luồng xử lý 10 bước của hệ th�
 ## 3. Hạ tầng và Pipeline
 
 - **Hạ tầng Đám mây (Azure Infrastructure):**
-  - Cụm **AKS `v1.32`** bật sẵn **Application Routing Add-on (Managed NGINX Ingress Controller `v1.11`)** (`IngressClass: webapprouting.kubernetes.azure.com`), truy cập qua tên miền miễn phí của Azure (`http://is402-ecommerce.southeastasia.cloudapp.azure.com`).
+  - Cụm **AKS `v1.32`** bật sẵn **Application Routing Add-on (Managed NGINX Ingress Controller `v1.11`)** (`IngressClass: webapprouting.kubernetes.azure.com`), truy cập qua tên miền miễn phí của Azure (`http://is402-ecommerce.japaneast.cloudapp.azure.com`).
   - Các dịch vụ `frontend-svc`, `user-svc`, `order-svc` hoạt động qua `ClusterIP` nội bộ; `order-svc` hỗ trợ chuyển đổi phiên bản **Blue/Green (`v1` / `v2`)** không gián đoạn.
 - **Tự động hóa CI/CD (GitHub Actions):**
-  - Tự động đóng gói Docker image cho 3 dịch vụ (`PHP 8.5.11`, `Java 25`, `Python 3.15.2`), đẩy lên **Azure Container Registry (ACR)** và cập nhật Kubernetes Manifests lên cụm **AKS**.
+  - Tự động đóng gói Docker image cho 3 dịch vụ (`PHP 8.5.11`, `Java 25`, `Python 3.14`), đẩy lên **Azure Container Registry (ACR)** và cập nhật Kubernetes Manifests lên cụm **AKS**.
 
 ---
 
