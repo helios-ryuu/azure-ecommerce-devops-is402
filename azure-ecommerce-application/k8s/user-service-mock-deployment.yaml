@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service-mock
+  labels:
+    app: user-svc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-svc
+  template:
+    metadata:
+      labels:
+        app: user-svc
+    spec:
+      containers:
+      - name: user-svc
+        image: python:3.14-slim
+        command:
+          - sh
+          - -c
+          - |
+            pip install --quiet fastapi uvicorn
+            cat > /tmp/user_svc.py << 'EOF'
+            from fastapi import FastAPI, Path
+            from fastapi.responses import JSONResponse
+            import uvicorn
+            app = FastAPI()
+
+            @app.get("/api/users/verify/{user_id}")
+            async def verify(user_id: str = Path(...)):
+                if user_id and len(user_id) >= 1:
+                    return JSONResponse(status_code=200, content={"valid": True})
+                return JSONResponse(status_code=404, content={"valid": False})
+
+            uvicorn.run(app, host="0.0.0.0", port=8080)
+            EOF
+            python /tmp/user_svc.py
+        ports:
+        - containerPort: 8080
