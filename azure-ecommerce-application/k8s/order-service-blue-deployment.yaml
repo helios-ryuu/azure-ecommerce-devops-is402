@@ -17,6 +17,8 @@ spec:
         app: order-service
         version: blue
     spec:
+      imagePullSecrets:
+      - name: acr-secret
       containers:
       - name: order-service
         image: acris402ecommerce.azurecr.io/order-service:v1-blue
