@@ -19,6 +19,16 @@ spec:
     spec:
       imagePullSecrets:
       - name: acr-secret
+      initContainers:
+      - name: install-aiohttp
+        image: python:3.14-slim
+        command:
+          - sh
+          - -c
+          - pip install --no-cache-dir --target=/mnt/aiohttp aiohttp
+        volumeMounts:
+        - name: aiohttp-vol
+          mountPath: /mnt/aiohttp
       containers:
       - name: order-service
         image: acris402ecommerce.azurecr.io/order-service:v1-blue
@@ -26,6 +36,8 @@ spec:
         ports:
         - containerPort: 8000
         env:
+        - name: PYTHONPATH
+          value: "/mnt/aiohttp"
         - name: SERVICE_VERSION
           valueFrom:
             secretKeyRef:
@@ -56,6 +68,9 @@ spec:
             secretKeyRef:
               name: order-service-secrets
               key: USER_SVC_URL
+        volumeMounts:
+        - name: aiohttp-vol
+          mountPath: /mnt/aiohttp
         resources:
           requests:
             cpu: 100m
@@ -63,3 +78,6 @@ spec:
           limits:
             cpu: 500m
             memory: 512Mi
+      volumes:
+      - name: aiohttp-vol
+        emptyDir: {}
