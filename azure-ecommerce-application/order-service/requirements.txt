@@ -4,3 +4,4 @@ httpx
 azure-cosmos
 aiohttp
 pydantic
+aiosqlite

@@ -80,3 +80,19 @@ async def create_order(payload: CreateOrderRequest):
         service_version=SERVICE_VERSION,
         data=saved_doc,
     )
+
+
+@app.get("/api/orders/{order_id}", response_model=OrderResponse)
+async def get_order(order_id: str):
+    try:
+        order = await cosmos_manager.get_order(order_id)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Lỗi hệ thống: {str(exc)}")
+    if not order:
+        raise HTTPException(status_code=404, detail="Không tìm thấy đơn hàng")
+    return OrderResponse(
+        status="success",
+        message="Đọc đơn hàng thành công.",
+        service_version=SERVICE_VERSION,
+        data=order,
+    )

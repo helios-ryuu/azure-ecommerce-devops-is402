@@ -77,7 +77,7 @@ Chi tiết sơ đồ kiến trúc và luồng xử lý 10 bước của hệ th�
 
 ## 4. Hướng dẫn khởi chạy
 
-*(Coming soon)*
+Chạy toàn bộ PostgreSQL, Redis, User Service và frontend tại máy bằng Docker Compose theo [`LOCAL_SETUP.md`](./LOCAL_SETUP.md). Quy trình này không tạo tài nguyên Azure.
 
 ---
 
