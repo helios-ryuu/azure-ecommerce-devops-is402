@@ -1,0 +1,3 @@
+mode,requests,concurrency,latency_avg_ms,latency_p50_ms,latency_p95_ms,throughput_rps
+postgresql,1000,20,7.885,7.086,10.781,2502.13
+redis_cache_aside,1000,20,2.325,1.713,4.676,7979.26
