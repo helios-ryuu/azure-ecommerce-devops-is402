@@ -32,6 +32,12 @@ python -m venv .venv
 .\.venv\Scripts\python benchmark\redis_benchmark.py -n 1000 -c 20
 ```
 
+Kết quả đo local ngày 17/11/2026 được lưu trong
+[`benchmark/RESULTS.md`](benchmark/RESULTS.md) và
+[`benchmark/results-local-2026-11-17.csv`](benchmark/results-local-2026-11-17.csv).
+Khi dùng cho báo cáo cuối kỳ, nên chạy lại 3–5 lần trên cùng một cấu hình và lấy
+giá trị trung bình.
+
 ## Dừng
 
 `docker compose down` giữ dữ liệu. Chỉ dùng `docker compose down -v` khi muốn xóa toàn bộ dữ liệu local.
