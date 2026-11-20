@@ -46,6 +46,11 @@ public class UserController {
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/health")
+    public ResponseEntity<?> health() {
+        return ResponseEntity.ok(Map.of("status", "ok", "service", "user-service"));
+    }
+
     public record RegisterRequest(@NotBlank @Size(min=3,max=80) String username, @NotBlank @Size(min=8,max=100) String password, @NotBlank @Email String email) {}
     public record LoginRequest(@NotBlank String username, @NotBlank String password) {}
     public record UserResponse(Long id, String username, String email) {}

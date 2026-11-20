@@ -25,7 +25,7 @@
 - **Tên bài tập:** **Bài tập 07: Triển khai ứng dụng trên cloud (Cloud-native applications)**
 - **Nhóm ứng dụng:** Thương mại điện tử (E-Commerce)
 - **Hướng hiện thực theo Barem:** **Nhánh Web** (Không đi sâu vào nhánh Trực quan dữ liệu phức tạp hay Huấn luyện mô hình ML)
-- **Thời hạn hoàn thành:** Hoàn tất trước ngày **27/12/2026** (Tuần báo cáo chính thức bắt đầu từ **28/12/2026**)
+- **Thời hạn hoàn thành:** Hoàn tất trước ngày **23/11/2026** (Ngày báo cáo chính thức: **24/11/2026**)
 
 ### Thành viên nhóm
 
@@ -90,16 +90,16 @@ Dự án tập trung giải quyết gọn gàng, đúng trọng tâm các yêu c
 
 ## 5. Lộ trình & Sản phẩm bàn giao
 
-### 5.1 Kế hoạch thời gian (Hoàn thành trước 27/12/2026)
-Chi tiết phân rã công việc xem tại [wbs.md](../2-planning-phase/wbs.md):
-1. **Giai đoạn 1 (01/11 – 10/11/2026):** Chốt phạm vi tinh gọn theo Barem nhánh Web, hoàn thiện `project-charter.md`, `architecture.md`, `functional-requirements.md`, `wbs.md`.
-2. **Giai đoạn 2 (11/11 – 22/11/2026):** Cấp phát Resource Group, AKS `v1.32`, ACR, PostgreSQL `v18`, Redis `7.2`, Cosmos DB và Azure Storage.
-3. **Giai đoạn 3 (18/11 – 10/12/2026):** Phát triển 3 ứng dụng (`PHP 8.5.11`, `Java 25`, `Python 3.14`), đóng gói container, cấu hình Managed NGINX Ingress Add-on, Blue/Green và CI/CD.
-4. **Giai đoạn 4 (05/12 – 20/12/2026):** Xây dựng Azure Functions Auto-ETL, nạp Dataset `> 4GB`, cấu hình Synapse + Power BI cơ bản, chạy 3 bài thực nghiệm đo kiểm.
-5. **Giai đoạn 5 (18/12 – 26/12/2026):** Hoàn thiện báo cáo Word, Slide PowerPoint chuẩn KLTN và tổng duyệt Demo **trước 27/12/2026** (sẵn sàng cho tuần báo cáo từ **28/12/2026**).
+### 5.1 Kế hoạch thời gian (Hoàn thành trước 23/11/2026, Báo cáo 24/11/2026)
+Chi tiết phân rã công việc xem tại [WBS.md](WBS.md):
+1. **Giai đoạn 1 (01/11 – 10/11/2026):** Chốt phạm vi tinh gọn theo Barem nhánh Web, hoàn thiện `PROJECT-CHARTER.md`, `ARCHITECTURE.md`, `FUNCTIONAL-REQUIREMENTS.md`, `WBS.md`.
+2. **Giai đoạn 2 (11/11 – 18/11/2026):** Cấp phát Resource Group, AKS `v1.32`, ACR, PostgreSQL `v18`, Redis `7.2`, Cosmos DB, Azure Functions v4 và Azure Storage.
+3. **Giai đoạn 3 (11/11 – 20/11/2026):** Phát triển 3 ứng dụng (`PHP 8.5.11`, `Java 25`, `Python 3.14`), đóng gói container, cấu hình Managed NGINX Ingress Add-on, Blue/Green và CI/CD.
+4. **Giai đoạn 4 (18/11 – 22/11/2026):** Xây dựng Azure Functions Auto-ETL, nạp Dataset `> 4GB`, cấu hình Synapse + Power BI cơ bản, chạy 3 bài thực nghiệm đo kiểm.
+5. **Giai đoạn 5 (21/11 – 23/11/2026):** Hoàn thiện báo cáo Word, Slide PowerPoint chuẩn KLTN và tổng duyệt Demo **trước 23/11/2026** (sẵn sàng báo cáo ngày **24/11/2026**).
 
 ### 5.2 Danh mục sản phẩm bàn giao (Deliverables)
-- **D01:** Bộ tài liệu quy hoạch dự án (`project-charter.md`, `architecture.md`, `functional-requirements.md`, `wbs.md`).
+- **D01:** Bộ tài liệu quy hoạch & vận hành dự án (`PROJECT-CHARTER.md`, `ARCHITECTURE.md`, `FUNCTIONAL-REQUIREMENTS.md`, `WBS.md`, `LOG.md`, `RUNBOOK-LOCAL.md`, `RUNBOOK.md`).
 - **D02:** Mã nguồn 3 dịch vụ (`frontend-php`, `user-service-java`, `order-service-python`) + K8s Manifests (Managed NGINX Ingress & Blue/Green) + GitHub Actions CI/CD.
 - **D03:** Mã nguồn `azure-function-etl` (`Python 3.14`) tự động đồng bộ đơn hàng từ Cosmos DB sang Azure Storage.
 - **D04:** Bộ Dataset `> 4GB` trên Azure Storage, script truy vấn Synapse SQL, 1 trang Power BI Dashboard và bảng số liệu thực nghiệm (Local vs Cloud, Tốc độ đọc/ghi, Độ trễ khác Region).

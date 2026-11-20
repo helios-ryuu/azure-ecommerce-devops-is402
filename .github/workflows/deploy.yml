@@ -1,0 +1,80 @@
+name: Deploy Cloud-Native E-Commerce to AKS
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "azure-ecommerce-application/**"
+  workflow_dispatch:
+
+env:
+  ACR_NAME: acris402ecommerce
+  ACR_LOGIN_SERVER: acris402ecommerce.azurecr.io
+  RESOURCE_GROUP: rg-is402-ecommerce
+  AKS_CLUSTER: aks-is402-ecommerce
+  APP_DIR: azure-ecommerce-application
+
+jobs:
+  docker-build-and-push:
+    name: "Job 1: Build & Push 3 Images to ACR"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to Azure Container Registry
+        run: az acr login --name ${{ env.ACR_NAME }}
+
+      - name: Build and Push Frontend PHP (PHP 8.5.11 & Apache)
+        run: |
+          docker build -t ${{ env.ACR_LOGIN_SERVER }}/frontend-php:latest ./${{ env.APP_DIR }}/frontend-php
+          docker push ${{ env.ACR_LOGIN_SERVER }}/frontend-php:latest
+
+      - name: Build and Push User Service (Java 25 & Spring Boot)
+        run: |
+          docker build -t ${{ env.ACR_LOGIN_SERVER }}/user-service:latest ./${{ env.APP_DIR }}/user-service
+          docker push ${{ env.ACR_LOGIN_SERVER }}/user-service:latest
+
+      - name: Build and Push Order Service (Python 3.14 & FastAPI)
+        run: |
+          docker build --target runtime -t ${{ env.ACR_LOGIN_SERVER }}/order-service:latest ./${{ env.APP_DIR }}/order-service
+          docker push ${{ env.ACR_LOGIN_SERVER }}/order-service:latest
+
+  deploy-to-aks:
+    name: "Job 2: Deploy Kubernetes Manifests to AKS"
+    needs: docker-build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get AKS Credentials
+        run: |
+          az aks get-credentials \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --name ${{ env.AKS_CLUSTER }} \
+            --overwrite-existing
+
+      - name: Deploy Manifests to AKS
+        run: |
+          kubectl apply -f ./${{ env.APP_DIR }}/k8s/user-service.yaml
+          kubectl apply -f ./${{ env.APP_DIR }}/k8s/order-service-blue-deployment.yaml
+          kubectl apply -f ./${{ env.APP_DIR }}/k8s/order-service-green-deployment.yaml
+          kubectl apply -f ./${{ env.APP_DIR }}/k8s/order-service-svc.yaml
+          kubectl apply -f ./${{ env.APP_DIR }}/k8s/frontend-web.yaml
+          kubectl apply -f ./${{ env.APP_DIR }}/k8s/ecommerce-ingress.yaml
+          kubectl rollout restart deployment/frontend-web deployment/user-service deployment/order-service-blue deployment/order-service-green
+          kubectl rollout status deployment/frontend-web --timeout=120s
+          kubectl rollout status deployment/user-service --timeout=120s
+          kubectl rollout status deployment/order-service-blue --timeout=120s

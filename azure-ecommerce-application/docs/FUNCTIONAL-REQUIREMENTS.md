@@ -19,7 +19,7 @@
 
 ## 1. Mục đích & Phạm vi Tinh gọn
 
-Tài liệu này định nghĩa ngắn gọn, rõ ràng các yêu cầu chức năng của hệ thống **Thương mại điện tử Cloud-Native** theo đúng **Nhánh Web** trong Barem chấm điểm môn IS402 và các công nghệ yêu cầu của **Bài tập 07**. Mọi tính năng rườm rà không nằm trong barem đã được lược bỏ để nhóm tập trung hoàn thành 100% trước ngày **27/12/2026**.
+Tài liệu này định nghĩa ngắn gọn, rõ ràng các yêu cầu chức năng của hệ thống **Thương mại điện tử Cloud-Native** theo đúng **Nhánh Web** trong Barem chấm điểm môn IS402 và các công nghệ yêu cầu của **Bài tập 07**. Mọi tính năng rườm rà không nằm trong barem đã được lược bỏ để nhóm tập trung hoàn thành 100% trước ngày **23/11/2026** (báo cáo ngày **24/11/2026**).
 
 ---
 

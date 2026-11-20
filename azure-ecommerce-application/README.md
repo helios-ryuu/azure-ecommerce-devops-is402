@@ -57,11 +57,11 @@
 
 ### 2.2 Sơ đồ Kiến trúc Tổng thể
 <p align="center">
-  <img src="./architecture.png" alt="Sơ đồ Kiến trúc Hệ thống Cloud-Native E-Commerce trên Azure" width="100%">
+  <img src="./diagrams/architecture.png" alt="Sơ đồ Kiến trúc Hệ thống Cloud-Native E-Commerce trên Azure" width="100%">
 </p>
 
 Chi tiết sơ đồ kiến trúc và luồng xử lý 10 bước của hệ thống xem tại:
-- [Thiết kế Kiến trúc Hệ thống (`architecture.md`)](./docs/2-planning-phase/architecture.md)
+- [Thiết kế Kiến trúc Hệ thống (`ARCHITECTURE.md`)](./docs/ARCHITECTURE.md)
 
 ---
 
@@ -77,17 +77,33 @@ Chi tiết sơ đồ kiến trúc và luồng xử lý 10 bước của hệ th�
 
 ## 4. Hướng dẫn khởi chạy
 
-Chạy toàn bộ PostgreSQL, Redis, User Service và frontend tại máy bằng Docker Compose theo [`LOCAL_SETUP.md`](./LOCAL_SETUP.md). Quy trình này không tạo tài nguyên Azure.
+### 4.1 Chạy thử nghiệm Local bằng Docker Compose
+Chạy toàn bộ 5 container (`postgres:18-alpine`, `redis:7.2-alpine`, `user-service`, `order-service`, `frontend-php`) trên máy cá nhân theo hướng dẫn chi tiết tại [`docs/RUNBOOK-LOCAL.md`](./docs/RUNBOOK-LOCAL.md):
+```bash
+cd azure-ecommerce-application
+docker compose up --build -d
+```
+- **Giao diện Web 4 trang (`PHP 8.5.11`):** `http://localhost:8081` (Tài khoản mẫu có sẵn: `demo` / `password123`)
+- **User Service (`Java 25`):** `http://localhost:8080/api/users/health`
+- **Order Service (`Python 3.14`):** `http://localhost:8000/health`
+
+### 4.2 Triển khai Cloud-Native trên Microsoft Azure (`Japan East`)
+Toàn bộ hướng dẫn từng bước từ khởi tạo hạ tầng trên Azure Portal / CLI đến triển khai AKS, Blue/Green, Auto-ETL, Synapse/Power BI và chạy Benchmark xem tại:
+- **[Cẩm nang Triển khai Toàn trình (`docs/RUNBOOK.md`)](./docs/RUNBOOK.md)**
+- **[Nhật ký Thực thi Hạ tầng (`docs/LOG.md`)](./docs/LOG.md)**
 
 ---
 
 ## 5. Tài liệu tham khảo & tài liệu dự án
 
-### 5.1 Tài liệu dự án
-1. [Hiến chương Dự án (`project-charter.md`)](./docs/1-initiation-phase/project-charter.md)
-2. [Thiết kế Kiến trúc Hệ thống (`architecture.md`)](./docs/2-planning-phase/architecture.md)
-3. [Đặc tả Yêu cầu Chức năng (`functional-requirements.md`)](./docs/2-planning-phase/functional-requirements.md)
-4. [Cấu trúc Phân rã Công việc & Tiến độ (`wbs.md`)](./docs/2-planning-phase/wbs.md)
+### 5.1 Tài liệu dự án (`docs/`)
+1. [Hiến chương Dự án (`PROJECT-CHARTER.md`)](./docs/PROJECT-CHARTER.md)
+2. [Thiết kế Kiến trúc Hệ thống (`ARCHITECTURE.md`)](./docs/ARCHITECTURE.md)
+3. [Đặc tả Yêu cầu Chức năng (`FUNCTIONAL-REQUIREMENTS.md`)](./docs/FUNCTIONAL-REQUIREMENTS.md)
+4. [Cấu trúc Phân rã Công việc & Tiến độ (`WBS.md`)](./docs/WBS.md)
+5. [Nhật ký Triển khai Thực tế (`LOG.md`)](./docs/LOG.md)
+6. [Cẩm nang Triển khai Toàn trình trên Cloud (`RUNBOOK.md`)](./docs/RUNBOOK.md)
+7. [Hướng dẫn Chạy thử nghiệm Local (`RUNBOOK-LOCAL.md`)](./docs/RUNBOOK-LOCAL.md)
 
 ### 5.2 Tài liệu tham khảo
 1. [Microsoft Learn: Cloud-native applications architecture on Azure](https://learn.microsoft.com/en-us/azure/architecture/solution-ideas/articles/cloud-native-apps)

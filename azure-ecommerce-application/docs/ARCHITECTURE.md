@@ -48,7 +48,7 @@ Hệ thống Thương mại điện tử được thiết kế theo kiến trúc
 
 ### 2.1 Bản vẽ Kiến trúc Chính thức
 <p align="center">
-  <img src="../../architecture.png" alt="Sơ đồ Kiến trúc Hệ thống Cloud-Native E-Commerce trên Azure" width="100%">
+  <img src="../diagrams/architecture.png" alt="Sơ đồ Kiến trúc Hệ thống Cloud-Native E-Commerce trên Azure" width="100%">
 </p>
 
 ### 2.2 Sơ đồ ASCII Master Diagram (Tỉ lệ 16:9)

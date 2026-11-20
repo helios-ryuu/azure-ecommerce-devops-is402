@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-web
+  labels:
+    app: frontend-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-web
+  template:
+    metadata:
+      labels:
+        app: frontend-web
+    spec:
+      containers:
+      - name: frontend-web
+        image: acris402ecommerce.azurecr.io/frontend-php:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: ecommerce-secrets
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: ecommerce-secrets
+              key: DB_PORT
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: ecommerce-secrets
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: ecommerce-secrets
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ecommerce-secrets
+              key: DB_PASSWORD
+        - name: DB_SSLMODE
+          valueFrom:
+            secretKeyRef:
+              name: ecommerce-secrets
+              key: DB_SSLMODE
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: ecommerce-secrets
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+              name: ecommerce-secrets
+              key: REDIS_PORT
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ecommerce-secrets
+              key: REDIS_PASSWORD
+        - name: REDIS_TLS
+          valueFrom:
+            secretKeyRef:
+              name: ecommerce-secrets
+              key: REDIS_TLS
+        - name: USER_SERVICE_URL
+          value: "http://user-svc:8080"
+        - name: ORDER_SERVICE_URL
+          value: "http://order-svc:8000"
+        - name: DEMO_USER_ID
+          value: "1"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-svc
+  labels:
+    app: frontend-web
+spec:
+  type: ClusterIP
+  selector:
+    app: frontend-web
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    name: http

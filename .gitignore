@@ -33,6 +33,10 @@ crash.*.log
 *.log
 
 # Editor and OS files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
 .DS_Store
 Thumbs.db
 .vscode/
@@ -44,7 +48,10 @@ Thumbs.db
 *.bkp
 .$*
 
-# --- Kubernetes secrets (KHÔNG commit file chứa secret thật) ---
+# --- Kubernetes & Local secrets (KHÔNG commit file chứa secret thật) ---
+secrets/
+**/secrets/
+*-password.txt
 *.secret.yaml
-*secret*
-k8s/*secret*
+k8s/*secret*.yaml
+!k8s/*secret*.example.yaml
