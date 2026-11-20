@@ -225,7 +225,7 @@
     - Tạo tạm `stis402india` tại `centralindia` (do Policy Azure for Students cho phép 5 vùng: `japaneast`, `centralindia`, `eastasia`, `indonesiacentral`, `koreacentral`).
     - Kết quả đo 50 mẫu từ VN: `Japan East` (`stis402lakehouse`) Avg `374.10 ms` (P50 `354.98 ms`, P95 `492.98 ms`) vs `Central India` (`stis402india`) Avg `330.21 ms` (P50 `326.19 ms`, P95 `376.47 ms`).
     - Đã xóa sạch tài nguyên test `stis402india` ngay sau khi đo xong (`az storage account delete`).
-23. **`[ĐÃ LÀM]` Ngày 20/11/2026:** Thiết lập GitHub Actions CI/CD (`AZURE_CREDENTIALS`) tự động build & deploy lên AKS `(Task 3.5 — Hoàn thành)`
+23. **`[ĐÃ LÀM]` Ngày 20–21/11/2026:** Thiết lập & chạy thành công GitHub Actions CI/CD (`AZURE_CREDENTIALS`) `(Task 3.5 — Hoàn thành)`
     - Tạo Service Principal `sp-is402-github-cicd` (quyền `Contributor` trên `rg-is402-ecommerce`) và lưu vào GitHub Repository Secret `AZURE_CREDENTIALS`.
-    - Hoàn thiện workflow `.github/workflows/deploy.yml` (tự động build/push 3 container images lên `acris402ecommerce` và `kubectl apply` + `rollout restart` lên `aks-is402-ecommerce` mỗi khi push lên `main`).
+    - Tối ưu `resources.requests` (`25m/50m` CPU) & rollout tuần tự cho cụm 1-node AKS (`Standard_B2als_v2`), workflow `.github/workflows/deploy.yml` chạy **`Success`** (`commit 204ea40`, tổng thời gian **`3m 31s`**: Job 1 Build & Push 3 Images `1m 39s` + Job 2 Deploy & Rollout AKS `1m 45s`).
 24. **`[CHƯA LÀM]` [22–23/11/2026]** Hoàn thiện Báo cáo Word, Slide thuyết trình, tổng duyệt Demo (báo cáo **24/11/2026**) & dọn dẹp tài nguyên sau báo cáo `(Gói 5)`
