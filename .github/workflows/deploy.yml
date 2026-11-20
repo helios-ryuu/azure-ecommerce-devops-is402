@@ -74,7 +74,11 @@ jobs:
           kubectl apply -f ./${{ env.APP_DIR }}/k8s/order-service-svc.yaml
           kubectl apply -f ./${{ env.APP_DIR }}/k8s/frontend-web.yaml
           kubectl apply -f ./${{ env.APP_DIR }}/k8s/ecommerce-ingress.yaml
-          kubectl rollout restart deployment/frontend-web deployment/user-service deployment/order-service-blue deployment/order-service-green
-          kubectl rollout status deployment/frontend-web --timeout=120s
-          kubectl rollout status deployment/user-service --timeout=120s
-          kubectl rollout status deployment/order-service-blue --timeout=120s
+          kubectl rollout restart deployment/frontend-web
+          kubectl rollout status deployment/frontend-web --timeout=180s
+          kubectl rollout restart deployment/user-service
+          kubectl rollout status deployment/user-service --timeout=180s
+          kubectl rollout restart deployment/order-service-blue
+          kubectl rollout status deployment/order-service-blue --timeout=180s
+          kubectl rollout restart deployment/order-service-green
+          kubectl rollout status deployment/order-service-green --timeout=180s

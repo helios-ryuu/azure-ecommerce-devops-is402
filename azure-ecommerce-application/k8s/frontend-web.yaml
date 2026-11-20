@@ -14,6 +14,7 @@ spec:
       labels:
         app: frontend-web
     spec:
+      terminationGracePeriodSeconds: 5
       containers:
       - name: frontend-web
         image: acris402ecommerce.azurecr.io/frontend-php:latest
