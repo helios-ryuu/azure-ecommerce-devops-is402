@@ -33,16 +33,35 @@ if ($redis !== null) {
 
 page('Đã thêm vào giỏ hàng', function () use ($product, $quantity, $newQty, $key) {
 ?>
-<div class="card" style="max-width:560px">
-  <p class="success">
-    Đã thêm <strong><?= (int) $quantity ?> × <?= htmlspecialchars($product['name']) ?></strong> vào giỏ hàng trên Redis (Key: <code><?= htmlspecialchars($key) ?></code>).
+<div class="card" style="max-width:620px;margin:0 auto">
+  <div class="order-banner-head" style="margin-bottom:14px">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+    <h2 style="margin:0;font-size:18px">Thêm sản phẩm vào giỏ hàng thành công</h2>
+  </div>
+
+  <p style="margin:0 0 18px;color:var(--text-secondary)">
+    Đã lưu <strong><?= (int) $quantity ?> × <?= htmlspecialchars($product['name']) ?></strong> vào bộ nhớ tạm Azure Cache for Redis.
   </p>
-  <p>Số lượng hiện tại của mặt hàng này trong giỏ: <strong><?= (int) $newQty ?></strong></p>
-  <p class="price">Đơn giá: <?= number_format((float) $product['price'], 0, ',', '.') ?> đ</p>
-  <p style="display:flex;gap:12px;margin-top:18px">
-    <a class="button" href="/cart.php">Xem giỏ hàng & Mua sản phẩm</a>
-    <a class="button secondary" href="/">Tiếp tục mua sắm</a>
-  </p>
+
+  <div class="meta-grid">
+    <div class="meta-item">
+      <div class="meta-label">Redis Cart Key</div>
+      <div class="meta-value"><code><?= htmlspecialchars($key) ?></code></div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Tổng SL sản phẩm này trong giỏ</div>
+      <div class="meta-value"><?= (int) $newQty ?> sản phẩm</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Đơn giá</div>
+      <div class="meta-value" style="color:var(--accent)"><?= number_format((float) $product['price'], 0, ',', '.') ?> đ</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a class="button lg" href="/cart.php">Xem giỏ hàng & Đặt mua</a>
+    <a class="button secondary lg" href="/">Tiếp tục mua sắm</a>
+  </div>
 </div>
 <?php
 });

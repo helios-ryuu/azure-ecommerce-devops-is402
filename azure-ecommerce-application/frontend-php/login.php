@@ -15,11 +15,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 page('Đăng nhập', function () use ($error) {
 ?>
 <div class="form-card">
-  <?php if ($error): ?><p class="error"><?= htmlspecialchars($error) ?></p><?php endif; ?>
+  <p style="margin:0 0 18px;color:var(--text-secondary);font-size:13.5px">
+    Xác thực tài khoản qua <code>user-svc</code> (Java 25 · Spring Boot) và PostgreSQL v18.
+  </p>
+  <?php if ($error): ?><div class="alert error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
   <form method="post">
-    <label>Tên đăng nhập</label><input name="username" required>
-    <label>Mật khẩu</label><input name="password" type="password" required>
-    <p><button>Đăng nhập</button></p>
+    <div class="field">
+      <label for="username">Tên đăng nhập</label>
+      <input id="username" name="username" autocomplete="username" placeholder="demo" required>
+    </div>
+    <div class="field">
+      <label for="password">Mật khẩu</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+    </div>
+    <button class="lg full" type="submit">Đăng nhập</button>
   </form>
+  <p style="margin:18px 0 0;font-size:13px;color:var(--text-secondary);text-align:center">
+    Chưa có tài khoản? <a href="/register.php" style="color:var(--accent);font-weight:600;text-decoration:none">Đăng ký ngay</a>
+  </p>
 </div>
 <?php });

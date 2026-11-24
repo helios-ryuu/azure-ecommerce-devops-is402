@@ -228,4 +228,6 @@
 23. **`[ĐÃ LÀM]` Ngày 20–21/11/2026:** Thiết lập & chạy thành công GitHub Actions CI/CD (`AZURE_CREDENTIALS`) `(Task 3.5 — Hoàn thành)`
     - Tạo Service Principal `sp-is402-github-cicd` (quyền `Contributor` trên `rg-is402-ecommerce`) và lưu vào GitHub Repository Secret `AZURE_CREDENTIALS`.
     - Tối ưu `resources.requests` (`25m/50m` CPU) & rollout tuần tự cho cụm 1-node AKS (`Standard_B2als_v2`), workflow `.github/workflows/deploy.yml` chạy **`Success`** (`commit 204ea40`, tổng thời gian **`3m 31s`**: Job 1 Build & Push 3 Images `1m 39s` + Job 2 Deploy & Rollout AKS `1m 45s`).
-24. **`[CHƯA LÀM]` [22–23/11/2026]** Hoàn thiện Báo cáo Word, Slide thuyết trình, tổng duyệt Demo (báo cáo **24/11/2026**) & dọn dẹp tài nguyên sau báo cáo `(Gói 5)`
+24. **`[ĐÃ LÀM]` Ngày 24/11/2026:** Tân trang giao diện Web (`frontend-php`), hoàn thiện tài liệu & sẵn sàng báo cáo KLTN `(Gói 5 — Hoàn thành 100%)`
+    - Nâng cấp toàn bộ `frontend-php/` (`bootstrap.php`, `index.php`, `detail.php`, `add-to-cart.php`, `cart.php`, `login.php`, `register.php`) sang phong cách **Microsoft Minimal Fluent Design** (Mica, Acrylic topbar, SVG inline, responsive) tự động đổi theme **Blue (`#0078d4`) $\leftrightarrow$ Green (`#107c10`)** theo `order-svc/health`.
+    - Kiểm tra cú pháp PHP 8.5 (`php -l`: 8/8 file không lỗi), đồng bộ 100% trạng thái trên `WBS.md`, `LOG.md`, `RUNBOOK.md` cho buổi tổng duyệt & báo cáo ngày **24/11/2026**.

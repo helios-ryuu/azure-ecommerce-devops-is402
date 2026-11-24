@@ -32,7 +32,7 @@ Toàn bộ dự án được chia làm **5 gói công việc (Work Packages)** g
 
 ```mermaid
 gantt
-    title TIẾN ĐỘ THỰC HIỆN ĐỒ ÁN IS402 (CẬP NHẬT 20/11/2026 — BÁO CÁO 24/11/2026)
+    title TIẾN ĐỘ THỰC HIỆN ĐỒ ÁN IS402 (HOÀN THÀNH 100% — BÁO CÁO 24/11/2026)
     dateFormat  YYYY-MM-DD
     section 1. Khởi động & Quy hoạch
     Chốt phạm vi, Kiến trúc, FR & WBS          :done, wbs1, 2026-11-01, 2026-11-10
@@ -46,8 +46,8 @@ gantt
     Func App Auto-ETL, Dataset >4GB & Power BI :done, wbs4a, 2026-11-11, 2026-11-20
     Thực nghiệm Benchmark (>4GB, Cache, Region):done, wbs4c, 2026-11-20, 2026-11-21
     section 5. Báo cáo & Nghiệm thu
-    Viết Báo cáo Word & Slide PPT chuẩn KLTN   :active, wbs5a, 2026-11-21, 2026-11-23
-    Tổng duyệt Demo & Báo cáo (24/11/2026)     :milestone, wbs5b, 2026-11-23, 1d
+    Viết Báo cáo Word & Slide PPT chuẩn KLTN   :done, wbs5a, 2026-11-21, 2026-11-23
+    Tổng duyệt Demo & Báo cáo (24/11/2026)     :done, milestone, wbs5b, 2026-11-24, 1d
 ```
 
 ---
@@ -68,7 +68,7 @@ gantt
 | **3.0** | **Gói 3: Phát triển Web, Microservices, Blue/Green & CI/CD** | **Code 3 dịch vụ (PHP, Java, Python), đóng gói Docker và triển khai lên AKS.** | | **Mục 4 (Web)** | | **20/11/2026** | **✅ Hoàn thành** |
 | 3.1 | Xây dựng `User Service` (`Java 25` / `Spring Boot`) | Dùng Spring Data JPA kết nối PostgreSQL `v18`; viết 3 REST API: `POST /api/users/register`, `POST /api/users/login` và `GET /api/users/verify/{id}`; viết `Dockerfile`. | Mã nguồn `user-service` & Image trên ACR | Mục 4.3 (1.0đ) | Đại, Sỹ | 20/11/2026 | ✅ Hoàn thành |
 | 3.2 | Xây dựng `Order Service` (`Python 3.14` / `FastAPI`) | Viết API `POST /api/orders` nhận giỏ hàng, dùng `httpx` gọi nội bộ `GET http://user-svc:8080/api/users/verify/{id}`; lưu đơn vào Cosmos DB; trả kèm `SERVICE_VERSION` (`v1-blue` / `v2-green`). | Mã nguồn `order-service` & Image trên ACR | Mục 4.3 (1.0đ) | Phúc, Sỹ | 20/11/2026 | ✅ Hoàn thành |
-| 3.3 | Xây dựng `Frontend Web` (`PHP 8.5.11` / `Apache 2.4.70`) | Code 4 trang: `index.php` (đọc SP qua `phpredis` Cache-Aside), `detail.php`, `add-to-cart.php` (lưu giỏ vào Redis `cart:{userId}`), `cart.php` (liệt kê giỏ & nút bấm gọi `POST /api/orders`). | Mã nguồn `frontend-php` & Image trên ACR | Mục 4.1 (1.0đ) | Đại, Sỹ | 20/11/2026 | ✅ Hoàn thành |
+| 3.3 | Xây dựng `Frontend Web` (`PHP 8.5.11` / `Apache 2.4.70`) | Code 4 trang (`index.php` Cache-Aside, `detail.php`, `add-to-cart.php`, `cart.php`) giao diện **Minimal Fluent Design** tự động thích ứng Blue (`#0078d4`) / Green (`#107c10`) theo `order-svc`. | Mã nguồn `frontend-php` & Image trên ACR | Mục 4.1 (1.0đ) | Đại, Sỹ | 24/11/2026 | ✅ Hoàn thành |
 | 3.4 | Cấu hình NGINX Ingress (`*.cloudapp.azure.com`) & Blue/Green (`v1`/`v2`) | Triển khai 4 Pods (`1/1 Running`) + `ecommerce-ingress` (`20.27.160.34`, domain `http://is402-ecommerce.japaneast.cloudapp.azure.com`); test chuyển đổi `v1-blue` $\leftrightarrow$ `v2-green` `0%` downtime thành công. | Bộ file `k8s/*.yaml` & Script switch | Mục 4.2 (0.5đ) | Sỹ, Phúc | 20/11/2026 | ✅ Hoàn thành |
 | 3.5 | Thiết lập pipeline CI/CD GitHub Actions | Tạo `.github/workflows/deploy.yml` + Service Principal `sp-is402-github-cicd` (`AZURE_CREDENTIALS`): tự động build/push 3 Docker images lên ACR và rollout lên AKS khi push `main`. | Workflow CI/CD sẵn sàng | Yêu cầu đề | Sỹ | 20/11/2026 | ✅ Hoàn thành |
 | **4.0** | **Gói 4: FaaS Auto-ETL, Synapse/Power BI & Thực nghiệm Đo kiểm** | **Triển khai hàm Serverless ETL, kết nối BI và chạy 3 kịch bản đo kiểm lấy số liệu.** | | **Mục 1.3, 3, 4.4** | | **20/11/2026** | **✅ Hoàn thành** |
@@ -77,10 +77,10 @@ gantt
 | 4.3 | Thực nghiệm 1: So sánh tốc độ xử lý `> 4GB` (Local vs Cloud) | Đo tổng hợp `4.1 GB` CSV (`81.92M` dòng): Local **`56.36 s`** vs Cloud Azure Synapse **`30.95 s`** (**nhanh hơn 1.82x**, khớp 100% doanh thu 5 danh mục). | `benchmark/RESULTS.md` & ảnh Synapse | Mục 1.3 (0.75đ) | Phúc, Sỹ | 20/11/2026 | ✅ Hoàn thành |
 | 4.4 | Thực nghiệm 2: Đo tốc độ đọc/ghi & tối ưu Redis Cache | Đo PostgreSQL vs Redis Cache-Aside: Local (`7.89 ms` vs `2.33 ms`, giảm **70.5%**, **3.19x** RPS) & Cloud Azure (`394.94 ms` vs `149.26 ms`, giảm **62.2%**, **2.60x** RPS). | `benchmark/RESULTS.md` | Mục 3.1 & 3.4 (1.0đ) | Đại, Sỹ | 20/11/2026 | ✅ Hoàn thành |
 | 4.5 | Thực nghiệm 3: Đo độ trễ khác Region (Cross-Region) | Đo 50 mẫu RTT giữa `Japan East` (`374.10 ms`) và `Central India` (`330.21 ms`) rồi xóa ngay `stis402india`. | `benchmark/RESULTS.md` | Mục 3.3 (0.5đ) | Sỹ | 20/11/2026 | ✅ Hoàn thành |
-| **5.0** | **Gói 5: Hoàn thiện Báo cáo, Slide & Tổng duyệt Demo** | **Tổng hợp kết quả vào Báo cáo KLTN, Slide thuyết trình và diễn tập Demo.** | | **Mục 5 (2.0đ)** | | **23/11/2026** | **⏳ Sắp tới** |
-| 5.1 | Biên soạn Báo cáo Word chuẩn định dạng KLTN | Trình bày đầy đủ 5 chương khớp 100% thứ tự Barem chấm điểm; kiểm tra kỹ font chữ, đánh số hình ảnh, bảng biểu và tài liệu tham khảo IEEE. | File báo cáo `.docx` hoàn chỉnh | Mục 5.2 (0.5đ) | Cả nhóm | 23/11/2026 | ⏳ Sắp tới |
-| 5.2 | Thiết kế Slide PowerPoint & thống kê Quotas | Soạn Slide cô đọng theo bullet points, đưa toàn bộ biểu đồ thực nghiệm và ảnh chụp lịch sử commit GitHub, phân quyền IAM, bảng chi phí Azure Cost Management (`<$100`). | File `.pptx` + Minh chứng quản lý DA | Mục 5.1 & 5.4 (1.0đ) | Cả nhóm | 23/11/2026 | ⏳ Sắp tới |
-| 5.3 | Tổng duyệt Demo toàn trình & quay video dự phòng | Chạy thử kịch bản Demo từ đầu đến cuối: Duyệt 4 trang Web -> Đăng ký/Mua hàng (2 services gọi nhau) -> Đổi Blue/Green -> Xem log Azure Functions ETL -> Xem Synapse/Power BI; quay video backup trước ngày 24/11. | Hệ thống sẵn sàng báo cáo ngày 24/11 | Mục 5.3 (0.5đ) | Cả nhóm | **23/11/2026** | ⏳ Sắp tới |
+| **5.0** | **Gói 5: Hoàn thiện Báo cáo, Slide & Tổng duyệt Demo** | **Tổng hợp kết quả vào Báo cáo KLTN, Slide thuyết trình và diễn tập Demo.** | | **Mục 5 (2.0đ)** | | **24/11/2026** | **✅ Hoàn thành** |
+| 5.1 | Biên soạn Báo cáo Word chuẩn định dạng KLTN | Trình bày đầy đủ 5 chương khớp 100% thứ tự Barem chấm điểm; kiểm tra kỹ font chữ, đánh số hình ảnh, bảng biểu và tài liệu tham khảo IEEE. | File báo cáo `.docx` hoàn chỉnh | Mục 5.2 (0.5đ) | Cả nhóm | 24/11/2026 | ✅ Hoàn thành |
+| 5.2 | Thiết kế Slide PowerPoint & thống kê Quotas | Soạn Slide cô đọng theo bullet points, đưa toàn bộ biểu đồ thực nghiệm và ảnh chụp lịch sử commit GitHub, phân quyền IAM, bảng chi phí Azure Cost Management (`<$100`). | File `.pptx` + Minh chứng quản lý DA | Mục 5.1 & 5.4 (1.0đ) | Cả nhóm | 24/11/2026 | ✅ Hoàn thành |
+| 5.3 | Tổng duyệt Demo toàn trình & quay video dự phòng | Chạy thử kịch bản Demo từ đầu đến cuối: Duyệt 4 trang Web -> Đăng ký/Mua hàng (2 services gọi nhau) -> Đổi Blue/Green (giao diện tự đổi Blue $\leftrightarrow$ Green) -> Xem log Azure Functions ETL -> Xem Synapse/Power BI. | Hệ thống sẵn sàng báo cáo ngày 24/11 | Mục 5.3 (0.5đ) | Cả nhóm | **24/11/2026** | ✅ Hoàn thành |
 
 ---
 

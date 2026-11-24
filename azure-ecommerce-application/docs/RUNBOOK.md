@@ -35,7 +35,7 @@
 | **Giai đoạn 5** | **Chạy 3 Kịch bản Thực nghiệm Benchmark & Thiết lập CI/CD (Hoàn thành 20/11/2026)** | **Mục 20–23** | **`[ĐÃ LÀM]`** |
 | └─ [Bước 16](#bước-16-mục-2022-log--đã-làm-chạy-3-kịch-bản-thực-nghiệm-đo-kiểm-tasks-43-44-45) | Chạy 3 bài Benchmark (Dataset `> 4GB`, Redis vs DB, Cross-Region `Japan East` vs `Central India`) | Mục 20–22 | **`[ĐÃ LÀM]`** |
 | └─ [Bước 17](#bước-17-mục-23-log--đã-làm-thiết-lập-github-actions-cicd-task-35) | Tạo `AZURE_CREDENTIALS` & kích hoạt GitHub Actions CI/CD | Mục 23 | **`[ĐÃ LÀM]`** |
-| **Giai đoạn 6** | **Tiết kiệm Chi phí & Dọn dẹp Tài nguyên sau Báo cáo** | **Mục 24** | **`[CHƯA LÀM]`** |
+| **Giai đoạn 6** | **Tiết kiệm Chi phí & Dọn dẹp Tài nguyên sau Báo cáo (Đã hoàn tất toàn bộ dự án 24/11/2026)** | **Mục 24** | **`[ĐÃ LÀM]`** |
 
 ---
 
@@ -428,7 +428,7 @@ docker push acris402ecommerce.azurecr.io/order-service:latest
 
 ---
 
-## Giai đoạn 6: Tiết kiệm Chi phí & Dọn dẹp Tài nguyên sau Báo cáo
+## Giai đoạn 6 — `[ĐÃ LÀM]`: Tiết kiệm Chi phí & Dọn dẹp Tài nguyên sau Báo cáo
 
 - **Tạm dừng (`Stop`) cụm AKS và PostgreSQL khi nghỉ ngơi chưa dùng tới:**
   ```bash
